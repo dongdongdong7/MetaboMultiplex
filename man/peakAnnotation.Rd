@@ -32,5 +32,5 @@ data <- peakPicking(data, centwavePara = set_centwavePara())
 data(positive.adinfo, package = "cliqueMS")
 positive.adinfo <- positive.adinfo[positive.adinfo$adduct \%in\%
                                      c("[M+H]+", "[M+H-H2O]+", "[M+Na]+", "[M+H-NH3]+", "[M+K]+", "[M+NH4]+"),]
-peakAnnotation(data, polarity = "positive", adinfo = positive.adinfo, thread = 3)
+data <- peakAnnotation(data, polarity = "positive", adinfo = positive.adinfo, thread = 3)
 }
