@@ -1,4 +1,4 @@
-# This is the script to create parameter for MetaboMultiplex
+# This is the script to create parameter list for MetaboMultiplex
 # 241118
 # Barry Song
 
@@ -70,4 +70,30 @@ set_centwavePara <- function(ppm = 30, peakwidth = c(4, 30), snthresh = 1,
                              noise = 100, prefilter = c(3, 100), firstBaselineCheck = FALSE){
   return(xcms::CentWaveParam(ppm = ppm, peakwidth = peakwidth, snthresh = snthresh,
                              noise = noise, prefilter = prefilter, firstBaselineCheck = firstBaselineCheck))
+}
+
+#' @title Set data parameters
+#' @description
+#' Set data parameters.
+#'
+#' @param data_dir Sample directory.
+#' @param res_dir Results directory.
+#' @param sampleData Sample information data frame.
+#'
+#' @return A parameter list.
+#' @export
+#'
+#' @examples
+#' set_dataPara(data_dir = "D:/fudan/Projects/2024/MultichannelR/Progress/build_package/test_data/AP/mix1/",
+#'              res_dir = "D:/fudan/Projects/2024/MultichannelR/Progress/build_package/tmp",
+#'              sampleData = data.frame(sample_id = c("mix1_1", "mix1_2", "mix1_3"), injection_index = 1:3))
+set_dataPara <- function(data_dir, res_dir, sampleData){
+  files_path <- list.files(data_dir, pattern = ".mzML")
+  files_path <- paste0(data_dir, files_path)
+  sampleData$sample_path <- files_path
+
+  dataPara <- list(sampleInfo = sampleData,
+                   sampleNumber = nrow(sampleData),
+                   resultDir = res_dir)
+  return(dataPara)
 }
