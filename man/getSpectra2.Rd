@@ -22,5 +22,5 @@ A data list.
 Each peak is assigned a ms2.
 }
 \examples{
-getSpectra2(data = data)
+data <- getSpectra2(data = data)
 }

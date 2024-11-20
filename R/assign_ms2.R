@@ -62,7 +62,7 @@
 #' @export
 #'
 #' @examples
-#' getSpectra2(data = data)
+#' data <- getSpectra2(data = data)
 getSpectra2 <- function(data, thread = 1, mzdiff = 0.001, rtdiff = 0){
   sps <- MsExperiment::spectra(data$rawData)
   spectraOrigin_vec <- MsExperiment::sampleData(data$rawData)$spectraOrigin
@@ -89,6 +89,7 @@ getSpectra2 <- function(data, thread = 1, mzdiff = 0.001, rtdiff = 0){
                                                                  n))
     sp2List <- foreach::`%dopar%`(foreach::foreach(i = 1:nrow(peaksInfo),
                                                    .packages = c("Spectra"),
+                                                   .export = c(".get_spectra2_closeRT", ".standardizeSpectra"),
                                                    .options.snow = opts),
                                   {
                                     loop(i)
@@ -97,6 +98,7 @@ getSpectra2 <- function(data, thread = 1, mzdiff = 0.001, rtdiff = 0){
     gc()
   }else stop("Thread wrong!")
   if(length(sp2List) == nrow(peaksInfo)) peaksInfo$spectra <- sp2List
+  else stop("length(sp2List) != nrow(peaksInfo)")
   data$peaksInfo <- peaksInfo
   return(data)
 }
