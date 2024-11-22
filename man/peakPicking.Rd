@@ -6,7 +6,7 @@
 \usage{
 peakPicking(
   data,
-  centwavePara,
+  xcmsPara,
   chunkSize = 3L,
   BPPARAM = BiocParallel::SnowParam(workers = 3)
 )
@@ -14,7 +14,7 @@ peakPicking(
 \arguments{
 \item{data}{data.}
 
-\item{centwavePara}{centwavePara.}
+\item{xcmsPara}{xcmsPara.}
 
 \item{chunkSize}{chunkSize.}
 
@@ -27,5 +27,5 @@ A data list.
 Execute the peak picking algorithm.
 }
 \examples{
-data <- peakPicking(data, centwavePara = set_centwavePara())
+data <- peakPicking(data, xcmsPara = set_xcmsPara())
 }

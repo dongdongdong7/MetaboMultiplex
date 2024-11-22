@@ -2,11 +2,12 @@
 
 export("%>%")
 export(assign_plexInfo)
+export(assign_tagNum)
 export(getSpectra2)
 export(load_data)
 export(peakAnnotation)
 export(peakPicking)
-export(set_centwavePara)
 export(set_dataPara)
 export(set_plexPara)
+export(set_xcmsPara)
 importFrom(magrittr,"%>%")

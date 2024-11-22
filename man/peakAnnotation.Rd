@@ -28,7 +28,7 @@ dataPara <- set_dataPara(data_dir = "D:/fudan/Projects/2024/MultichannelR/Progre
 res_dir = "D:/fudan/Projects/2024/MultichannelR/Progress/build_package/tmp",
 sampleData = data.frame(sample_id = c("mix1_1", "mix1_2", "mix1_3"), injection_index = 1:3))
 data <- load_data(dataPara = dataPara)
-data <- peakPicking(data, centwavePara = set_centwavePara())
+data <- peakPicking(data, xcmsPara = set_xcmsPara())
 data(positive.adinfo, package = "cliqueMS")
 positive.adinfo <- positive.adinfo[positive.adinfo$adduct \%in\%
                                      c("[M+H]+", "[M+H-H2O]+", "[M+Na]+", "[M+H-NH3]+", "[M+K]+", "[M+NH4]+"),]

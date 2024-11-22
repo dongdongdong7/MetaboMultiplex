@@ -27,7 +27,7 @@ load_data <- function(dataPara){
 #' Execute the peak picking algorithm.
 #'
 #' @param data data.
-#' @param centwavePara centwavePara.
+#' @param xcmsPara xcmsPara.
 #' @param chunkSize chunkSize.
 #' @param BPPARAM BPPARAM.
 #'
@@ -35,9 +35,10 @@ load_data <- function(dataPara){
 #' @export
 #'
 #' @examples
-#' data <- peakPicking(data, centwavePara = set_centwavePara())
-peakPicking <- function(data, centwavePara, chunkSize = 3L, BPPARAM = BiocParallel::SnowParam(workers = 3)){
-  rawData_new <- xcms::findChromPeaks(object = data$rawData, param = centwavePara, msLevel = 1L, chunkSize = chunkSize, BPPARAM = BPPARAM)
+#' data <- peakPicking(data, xcmsPara = set_xcmsPara())
+peakPicking <- function(data, xcmsPara, chunkSize = 3L, BPPARAM = BiocParallel::SnowParam(workers = 3)){
+  rawData_new <- xcms::findChromPeaks(object = data$rawData, param = xcmsPara$centwavePara, msLevel = 1L, chunkSize = chunkSize, BPPARAM = BPPARAM)
+  rawData_new <- xcms::refineChromPeaks(object = rawData_new, param = xcmsPara$mergepeakPara, msLevel = 1L, chunkSize = chunkSize, BPPARM = BPPARAM)
   peaksInfo <- dplyr::as_tibble(cbind(xcms::chromPeaks(rawData_new), xcms::chromPeakData(rawData_new)), rownames = "cpid")
   return(list(rawData = rawData_new,
               peaksInfo = peaksInfo))
@@ -60,7 +61,7 @@ peakPicking <- function(data, centwavePara, chunkSize = 3L, BPPARAM = BiocParall
 #' res_dir = "D:/fudan/Projects/2024/MultichannelR/Progress/build_package/tmp",
 #' sampleData = data.frame(sample_id = c("mix1_1", "mix1_2", "mix1_3"), injection_index = 1:3))
 #' data <- load_data(dataPara = dataPara)
-#' data <- peakPicking(data, centwavePara = set_centwavePara())
+#' data <- peakPicking(data, xcmsPara = set_xcmsPara())
 #' data(positive.adinfo, package = "cliqueMS")
 #' positive.adinfo <- positive.adinfo[positive.adinfo$adduct %in%
 #'                                      c("[M+H]+", "[M+H-H2O]+", "[M+Na]+", "[M+H-NH3]+", "[M+K]+", "[M+NH4]+"),]

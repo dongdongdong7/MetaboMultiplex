@@ -57,19 +57,23 @@ set_plexPara <- function(targetGroup = c("Amine", "Phenol", "Alcohol", "Custom")
   return(plexPara)
 }
 
-#' @title Set centwavePara
+#' @title Set xcmsPara
 #' @description
 #' See xcms::CentWaveParam function help.
+#' See xcms::MergeNeighboringPeakParam function help.
 #'
-#' @return A CentWaveParam object
+#' @return A xcmsPara list.
 #' @export
 #'
 #' @examples
-#' centwavePara <- set_centwavePara()
-set_centwavePara <- function(ppm = 30, peakwidth = c(4, 30), snthresh = 1,
-                             noise = 100, prefilter = c(3, 100), firstBaselineCheck = FALSE){
-  return(xcms::CentWaveParam(ppm = ppm, peakwidth = peakwidth, snthresh = snthresh,
-                             noise = noise, prefilter = prefilter, firstBaselineCheck = firstBaselineCheck))
+#' xcmsPara <- set_xcmsPara()
+set_xcmsPara <- function(ppm = 30, peakwidth = c(4, 30), snthresh = 1,
+                             noise = 100, prefilter = c(3, 100), firstBaselineCheck = FALSE,
+                         expandRt = 2, expandMz = 0.01, minProp = 0.75){
+  centwavePara <- xcms::CentWaveParam(ppm = ppm, peakwidth = peakwidth, snthresh = snthresh,
+                                      noise = noise, prefilter = prefilter, firstBaselineCheck = firstBaselineCheck)
+  mergepeakPara <- xcms::MergeNeighboringPeaksParam(expandRt = expandRt, expandMz = expandMz, ppm = ppm, minProp = minProp)
+  return(list(centwavePara = centwavePara, mergepeakPara = mergepeakPara))
 }
 
 #' @title Set data parameters
