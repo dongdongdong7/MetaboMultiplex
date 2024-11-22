@@ -169,17 +169,33 @@ assign_tagNum <- function(data, plexPara, thread = 1){
 #   nrow_isoTb <- sapply(isoTb, nrow)
 # }
 
-#peakGrouping(data = data, plexPara = plexPara, thread = 3)
+#' @title Peak Grouping
+#' @description
+#' Peak grouping step.
+#'
+#' @param data data list.
+#' @param plexPara plexPara list.
+#' @param thread thread.
+#'
+#' @return A data list.
+#' @export
+#'
+#' @examples
+#' peakGrouping(data = data, plexPara = plexPara, thread = 3)
 peakGrouping <- function(data, plexPara, thread = 1){
   peaksInfo <- data$peaksInfo
-  lapply(unique(peaksInfo$sample), function(n) {
-    browser()
+  peakGroupList <- lapply(unique(peaksInfo$sample), function(n) {
+    message(paste0(n, "/", length(unique(peaksInfo$sample))))
     peaksInfo_n <- peaksInfo %>%
       dplyr::filter(sample == n)
     peaksInfo_n_plex <- peaksInfo_n %>%
       dplyr::filter(!is.na(plexIdx)) %>%
       dplyr::arrange(mz)
+    peaksInfo_n_unplex <- peaksInfo_n %>%
+      dplyr::filter(is.na(plexIdx)) %>%
+      dplyr::arrange(mz)
     delete_idx <<- c()
+    print(length(delete_idx))
     peakGroupListAll <- lapply(1:(plexPara$plexNumber - 1), function(start_loop) {
       peakGroupList <- lapply(1:nrow(peaksInfo_n_plex), function(i) {
         if(i %in% delete_idx) return(NULL)
@@ -188,10 +204,20 @@ peakGrouping <- function(data, plexPara, thread = 1){
             idx <- which(dplyr::near(peaksInfo_n_plex$mz - peaksInfo_n_plex[i, ]$mz, plexPara$deltaMz * j, tol = plexPara$tolMz1) &
                            dplyr::near(peaksInfo_n_plex$rt, peaksInfo_n_plex[i, ]$rt, tol = plexPara$deltaRt) &
                            peaksInfo_n_plex$plexIdx - peaksInfo_n_plex[i, ]$plexIdx == j)
-            #idx <- idx[which.min(peaksInfo_n_plex$mz[idx] - peaksInfo_n_plex[i, ]$mz)]
-            # TODO: MergeNeighboringPeaksParam and PPC
-            # Msnbase::alignRt Msnbase::compareChromatograms xcms::manualChromPeaks
-            idx <- idx[which.min(abs(peaksInfo_n_plex$rt[idx] - peaksInfo_n_plex[i, ]$rt))]
+            # if length(idx) > 1, ppc will be used to filter peaks.
+            if(length(idx) > 1){
+              target_cpid <- peaksInfo_n_plex[i, ]$cpid
+              other_cpid <- peaksInfo_n_plex[idx, ]$cpid
+              target_chr <- xcms::chromPeakChromatograms(data$rawData, peaks = target_cpid)[1]
+              other_chrs <- xcms::chromPeakChromatograms(data$rawData, peaks = other_cpid)
+              ppc_vec <- sapply(1:nrow(other_chrs), function(k) {
+                other_chr <- other_chrs[k]
+                .compare_peaks(chr1 = other_chr, target_chr)
+              })
+              # idx <- idx[which.min(peaksInfo_n_plex$mz[idx] - peaksInfo_n_plex[i, ]$mz)]
+              # idx <- idx[which.min(abs(peaksInfo_n_plex$rt[idx] - peaksInfo_n_plex[i, ]$rt))]
+              idx <- idx[which.max(ppc_vec)]
+            }
             if(length(idx) == 0) return(NA)
             else return(idx)
           })
@@ -204,6 +230,53 @@ peakGrouping <- function(data, plexPara, thread = 1){
       delete_idx <<- delete_idx[!is.na(delete_idx)]
       return(peakGroupList)
     })
+    peakGroupListAll <- purrr::list_flatten(peakGroupListAll)
+    peakGroupListAll <- lapply(peakGroupListAll, function(x) {peaksInfo_n_plex[x, ]})
+    peakGroup_num_vec <- sapply(peakGroupListAll, function(x) {length(which(!is.na(x$cpid)))})
+    peakGroupListAll <- peakGroupListAll[which(peakGroup_num_vec >= 3)]
+    # Use peaksInfo_n_unplex to fill peakGroup
+    peakGroupListAll <- lapply(peakGroupListAll, function(x) {
+      missing_plexIdx <- which(is.na(x$plexIdx))
+      if(length(missing_plexIdx) == 0) return(x)
+      ref_plexIdx <- which(!is.na(x$plexIdx))[1]
+      ref_cpid <- x$cpid[ref_plexIdx]
+      ref_mz <- x$mz[ref_plexIdx]
+      ref_rt <- x$rt[ref_plexIdx]
+      fill_idx <- sapply(missing_plexIdx, function(i) {
+        if(i > ref_plexIdx) fill_mz <- ref_mz + plexPara$deltaMz * (i - ref_plexIdx)
+        else fill_mz <- ref_mz - plexPara$deltaMz * (ref_plexIdx - i)
+        idx <- which(dplyr::near(peaksInfo_n_unplex$mz, fill_mz, tol = plexPara$tolMz1) &
+                       dplyr::near(peaksInfo_n_unplex$rt, ref_rt, tol = plexPara$deltaRt))
+        if(length(idx) > 0){
+          fill_cpid <- peaksInfo_n_unplex[idx, ]$cpid
+          ref_chr <- xcms::chromPeakChromatograms(data$rawData, peaks = ref_cpid)[1]
+          fill_chrs <- xcms::chromPeakChromatograms(data$rawData, peaks = fill_cpid)
+          ppc_vec <- sapply(1:nrow(fill_chrs), function(k) {
+            fill_chr <- fill_chrs[k]
+            .compare_peaks(chr1 = fill_chr, ref_chr)
+          })
+          idx <- idx[which.max(ppc_vec)]
+          ppc <- ppc_vec[which.max(ppc_vec)]
+          if(ppc < 0.8) idx <- NA
+        }
+        else idx <- NA
+        return(idx)
+      })
+      x[missing_plexIdx, ] <- peaksInfo_n_unplex[c(1, fill_idx), ][-1, ]
+      return(x)
+    })
+    #rm(delete_idx)
+    print(length(delete_idx))
+    return(peakGroupListAll)
   })
-  rm(delete_idx)
+  data$peakGroupList <- peakGroupList
+  return(data)
 }
+
+# Fill blank plex.
+# test <- xcms::manualChromPeaks(data$rawData,
+#                                chromPeaks = cbind(
+#                                  mzmin = c(243.13, 251.18), mzmax = c(243.14, 251.19),
+#                                  rtmin = c(740, 740), rtmax = c(750, 750)
+#                                ),
+#                                sample = 1)
