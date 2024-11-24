@@ -76,7 +76,7 @@ peakAnnotation <- function(data, polarity = "positive", adinfo, ppm = 10, thread
     data_xs <- xcms:::.XCMSnExp2xcmsSet(data_n)
     set.seed(2)
     ex.cliqueGroups <- cliqueMS::getCliques(data_xs, filter = TRUE, silent = FALSE)
-    ex.Isotopes <- cliqueMS::getIsotopes(ex.cliqueGroups, ppm = ppm)
+    ex.Isotopes <- cliqueMS::getIsotopes(ex.cliqueGroups, ppm = ppm, maxCharge = 4)
     ex.Adducts <- cliqueMS::getAnnotation(ex.Isotopes, ppm = ppm,
                                           adinfo = adinfo, polarity = polarity,
                                           normalizeScore = TRUE)
