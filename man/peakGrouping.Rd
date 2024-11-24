@@ -4,7 +4,7 @@
 \alias{peakGrouping}
 \title{Peak Grouping}
 \usage{
-peakGrouping(data, plexPara, thread = 1)
+peakGrouping(data, plexPara, thread = 1, extra_formula = "C14H15NO2S")
 }
 \arguments{
 \item{data}{data list.}
@@ -12,6 +12,8 @@ peakGrouping(data, plexPara, thread = 1)
 \item{plexPara}{plexPara list.}
 
 \item{thread}{thread.}
+
+\item{extra_formula}{Additional molecular formula from derivatisation.}
 }
 \value{
 A data list.

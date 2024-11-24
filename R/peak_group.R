@@ -143,6 +143,7 @@ assign_tagNum <- function(data, plexPara, thread = 1){
 #' @examples
 #' assign_tagNum_tolerant(data, plexPara = plexPara)
 assign_tagNum_tolerant <- function(data, plexPara, isoRt = 1, thread = 3){
+  # TODO: need chunk parameter
   peaksInfo <- data$peaksInfo
   idx_no_tagNum <- which(is.na(data$peaksInfo$tagNum))
 
@@ -216,13 +217,14 @@ assign_tagNum_tolerant <- function(data, plexPara, isoRt = 1, thread = 3){
 #' @param data data list.
 #' @param plexPara plexPara list.
 #' @param thread thread.
+#' @param extra_formula Additional molecular formula from derivatisation.
 #'
 #' @return A data list.
 #' @export
 #'
 #' @examples
 #' peakGrouping(data = data, plexPara = plexPara, thread = 3)
-peakGrouping <- function(data, plexPara, thread = 1){
+peakGrouping <- function(data, plexPara, thread = 1, extra_formula = "C14H15NO2S"){
   peaksInfo <- data$peaksInfo
   peakGroupList <- lapply(unique(peaksInfo$sample), function(n) {
     message(paste0(n, "/", length(unique(peaksInfo$sample))))
@@ -309,7 +311,34 @@ peakGrouping <- function(data, plexPara, thread = 1){
     print(length(delete_idx))
     return(peakGroupListAll)
   })
-  data$peakGroupList <- peakGroupList
+  peakGroupList <- purrr::list_flatten(peakGroupList)
+
+  reagent <- MetaboCoreUtils::standardizeFormula(extra_formula)
+  reagent_mz <- MetaboCoreUtils::formula2mz(reagent, adduct = "[M+H]+")[[1]]
+  reagent_mass <- MetaboCoreUtils::mz2mass(reagent_mz)[[1]]
+
+  peakGroup <- purrr::list_rbind(lapply(1:length(peakGroupList), function(i) {
+    peakGroup <- peakGroupList[[i]]
+    table_tmp <- table(peakGroup$tagNum)
+    if(length(table_tmp) == 0){
+      tagNum <- 1;tagNum_real <- NA
+    }else{
+      tagNum <- as.integer(names(table_tmp[which.max(table_tmp)]))
+      tagNum_real <- tagNum
+    }
+    ref_plexIdx <- which(!is.na(peakGroup$mz))[1]
+    ref_mz <- peakGroup[ref_plexIdx, ]$mz
+    ref_rt <- peakGroup[ref_plexIdx, ]$rt
+    peaksNum <- length(which(!is.na(peakGroup$mz)))
+    sample <- unique(peakGroup$sample[!is.na(peakGroup$sample)])
+    reagent_mz_i <- reagent_mz + (ref_plexIdx - 1) * plexPara$deltaMz
+    mass <- (ref_mz - reagent_mz_i) * tagNum
+    adduct <- paste0(unique(peakGroup$an1[!is.na(peakGroup$an1)]), collapse = ";")
+    if(mass < 0) mass <- NA
+    peakGroup_new <- dplyr::tibble(mass = mass, rt = ref_rt, peaksNum = peaksNum, sample = sample, tagNum = tagNum_real, adduct = adduct, peaks = list(peakGroup))
+    return(peakGroup_new)
+  }))
+  data$peakGroup <- peakGroup
   return(data)
 }
 

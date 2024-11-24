@@ -1,4 +1,4 @@
-plexPara <- set_plexPara(targetGroup = "Amine", deltaRt = 30)
+plexPara <- set_plexPara(targetGroup = "Amine", deltaRt = 40)
 xcmsPara = set_xcmsPara(ppm = 30, peakwidth = c(4, 30), snthresh = 1,
                         noise = 100, prefilter = c(3, 100), firstBaselineCheck = FALSE,
                         expandRt = 2, expandMz = 0.01, minProp = 0.75)
@@ -14,5 +14,6 @@ data <- peakAnnotation(data, polarity = "positive", adinfo = positive.adinfo, th
 data <- getSpectra2(data = data, thread = 5)
 data <- assign_plexInfo(data, plexPara, thread = 3)
 data <- assign_tagNum(data, plexPara = plexPara, thread = 3)
+data <- assign_tagNum_tolerant(data, plexPara = plexPara, isoRt = 1, thread = 3)
 data <- peakGrouping(data = data, plexPara = plexPara, thread = 1)
-data$peakGroupList[[1]][[1]]
+data$peakGroupList[[1]][[3]]
