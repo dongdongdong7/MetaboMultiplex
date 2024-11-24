@@ -84,16 +84,17 @@ assign_tagNum <- function(data, plexPara, thread = 1){
   deltaIsotope2 <- deltaIsotope1 / 2
   deltaIsotope3 <- deltaIsotope1 / 3
   deltaIsotope4 <- deltaIsotope1 / 4
+  peaksInfo$isoGroup <- stringr::str_extract(peaksInfo$isotope, "(?<=\\[)\\d+(?=\\])")
 
   loop <- function(i){
     peakInfo <- peaksInfo[i, ]
-    cliqueGroup <- peaksInfo %>%
+    isoIdx <- peakInfo$isoGroup
+    if(is.na(isoIdx)) return(NA)
+    isoGroup <- peaksInfo %>%
       dplyr::filter(sample == peakInfo$sample) %>%
-      dplyr::filter(cliqueGroup == peakInfo$cliqueGroup)
-    isoIdx <- stringr::str_extract(peakInfo$isotope, "(?<=\\[)\\d+(?=\\])")
-    if(!is.na(isoIdx)){
-      cliqueGroup <- cliqueGroup[which(stringr::str_extract(cliqueGroup$isotope, "(?<=\\[)\\d+(?=\\])") == isoIdx), ]
-      tagNum <- which(dplyr::near(mean(abs(diff(cliqueGroup$mz))),
+      dplyr::filter(isoGroup == isoIdx)
+    if(nrow(isoGroup) >= 2){
+      tagNum <- which(dplyr::near(mean(abs(diff(isoGroup$mz))),
                                   c(deltaIsotope1, deltaIsotope2, deltaIsotope3, deltaIsotope4),
                                   tol = plexPara$tolMz1))
       if(length(tagNum) == 0) tagNum <- NA
@@ -113,7 +114,7 @@ assign_tagNum <- function(data, plexPara, thread = 1){
     opts <- list(progress = function(n) utils::setTxtProgressBar(pb,
                                                                  n))
     tagNum_vec <- foreach::`%dopar%`(foreach::foreach(i = 1:nrow(peaksInfo),
-                                                    .packages = c("stringr", "dplyr"),
+                                                    .packages = c("dplyr"),
                                                     .options.snow = opts,
                                                     .combine = "c"),
                                    {
@@ -126,48 +127,87 @@ assign_tagNum <- function(data, plexPara, thread = 1){
   data$peaksInfo <- peaksInfo
   return(data)
 }
-# assign_tagNum(data, plexPara = plexPara)
-# assign_tagNum <- function(data, plexPara, isoRt = 1){
-#   browser()
-#
-#   peaksInfo <- data$peaksInfo
-#
-#   deltaIsotope1 <- 1.0033
-#   deltaIsotope2 <- deltaIsotope1 / 2
-#   deltaIsotope3 <- deltaIsotope1 / 3
-#   deltaIsotope4 <- deltaIsotope1 / 4
-#
-#   isoTb <- lapply(1:nrow(peaksInfo), function(i) {
-#     print(paste0(i, " / ", nrow(peaksInfo)))
-#     sampleIdx <- peaksInfo[i, ]$sample
-#     mz_isotope1 <- peaksInfo[i, ]$mz + deltaIsotope1
-#     mz_isotope2 <- peaksInfo[i, ]$mz + deltaIsotope2
-#     mz_isotope3 <- peaksInfo[i, ]$mz + deltaIsotope3
-#     mz_isotope4 <- peaksInfo[i, ]$mz + deltaIsotope4
-#     iso_tmp1 <- peaksInfo %>%
-#       dplyr::filter(sample == sampleIdx) %>%
-#       dplyr::filter(dplyr::near(mz, mz_isotope1, tol = plexPara$tolMz1) & dplyr::near(rt, peaksInfo[i, ]$rt, tol = isoRt)) %>%
-#       dplyr::filter(maxo < peaksInfo[i, ]$maxo)
-#     iso_tmp2 <- peaksInfo %>%
-#       dplyr::filter(sample == sampleIdx) %>%
-#       dplyr::filter(dplyr::near(mz, mz_isotope2, tol = plexPara$tolMz1) & dplyr::near(rt, peaksInfo[i, ]$rt, tol = isoRt)) %>%
-#       dplyr::filter(maxo < peaksInfo[i, ]$maxo)
-#     iso_tmp3 <- peaksInfo %>%
-#       dplyr::filter(sample == sampleIdx) %>%
-#       dplyr::filter(dplyr::near(mz, mz_isotope3, tol = plexPara$tolMz1) & dplyr::near(rt, peaksInfo[i, ]$rt, tol = isoRt)) %>%
-#       dplyr::filter(maxo < peaksInfo[i, ]$maxo)
-#     iso_tmp4 <- peaksInfo %>%
-#       dplyr::filter(sample == sampleIdx) %>%
-#       dplyr::filter(dplyr::near(mz, mz_isotope4, tol = plexPara$tolMz1) & dplyr::near(rt, peaksInfo[i, ]$rt, tol = isoRt)) %>%
-#       dplyr::filter(maxo < peaksInfo[i, ]$maxo)
-#     iso_tmp <- rbind(iso_tmp1, iso_tmp2, iso_tmp3, iso_tmp4)
-#     if(nrow(iso_tmp) != 0){
-#       iso_tmp <- rbind(peaksInfo[i, ], iso_tmp)
-#     }
-#     return(iso_tmp)
-#   })
-#   nrow_isoTb <- sapply(isoTb, nrow)
-# }
+#' @title Assign tagNum with a tolerant method
+#' @description
+#' This function should be execute optionally after assign_tagNum function.
+#' Assign tagNum in a tolerant way to peaks where tagNum is NA.
+#'
+#' @param data data list.
+#' @param plexPara plexPara list.
+#' @param isoRt Isotope retention time search range.
+#' @param thread thread.
+#'
+#' @return A data list.
+#' @export
+#'
+#' @examples
+#' assign_tagNum_tolerant(data, plexPara = plexPara)
+assign_tagNum_tolerant <- function(data, plexPara, isoRt = 1, thread = 3){
+  peaksInfo <- data$peaksInfo
+  idx_no_tagNum <- which(is.na(data$peaksInfo$tagNum))
+
+  deltaIsotope1 <- 1.0033
+  deltaIsotope2 <- deltaIsotope1 / 2
+  deltaIsotope3 <- deltaIsotope1 / 3
+  deltaIsotope4 <- deltaIsotope1 / 4
+
+  loop <- function(i){
+    sampleIdx <- peaksInfo[i, ]$sample
+    mz_isotope1 <- peaksInfo[i, ]$mz + deltaIsotope1
+    mz_isotope2 <- peaksInfo[i, ]$mz + deltaIsotope2
+    mz_isotope3 <- peaksInfo[i, ]$mz + deltaIsotope3
+    mz_isotope4 <- peaksInfo[i, ]$mz + deltaIsotope4
+
+    idx <- sapply(c(mz_isotope1, mz_isotope2, mz_isotope3, mz_isotope4), function(mz_isotope) {
+      idx_tmp <- which(peaksInfo$sample == sampleIdx &
+                      dplyr::near(peaksInfo$mz, mz_isotope, tol = plexPara$tolMz1) &
+                      dplyr::near(peaksInfo$rt, peaksInfo[i, ]$rt, tol = isoRt) &
+                      peaksInfo$maxo < peaksInfo[i, ]$maxo)
+      if(length(idx_tmp) == 0) idx_tmp <- NA
+      return(idx_tmp)
+    })
+    if(length(idx[!is.na(idx)]) > 1){
+      ref_chr <- xcms::chromPeakChromatograms(data$rawData, peaks = peaksInfo[i, ]$cpid)[1]
+      ppc_vec <- sapply(idx, function(j) {
+        if(is.na(j)) return(NA)
+        tmp_chr <- xcms::chromPeakChromatograms(data$rawData, peaks = peaksInfo[j, ]$cpid)[1]
+        .compare_peaks(tmp_chr, ref_chr)
+      })
+      tmp <- 1:4
+      idx[tmp[-which.max(ppc_vec) ]] <- NA
+    }
+    else if(all(is.na(idx))) return(NA)
+    return(which(!is.na(idx)))
+  }
+
+  pb <- utils::txtProgressBar(max = length(idx_no_tagNum), style = 3)
+  if(thread == 1){
+    tagNum_vec_no_tagNum <- sapply(1:length(idx_no_tagNum), function(x) {
+      utils::setTxtProgressBar(pb, x)
+      i <- idx_no_tagNum[x]
+      loop(i)
+    })
+  }else if(thread > 1){
+    cl <- snow::makeCluster(thread)
+    doSNOW::registerDoSNOW(cl)
+    opts <- list(progress = function(n) utils::setTxtProgressBar(pb,
+                                                                 n))
+    tagNum_vec_no_tagNum <- foreach::`%dopar%`(foreach::foreach(x = 1:length(idx_no_tagNum),
+                                                    .packages = c("xcms", "dplyr"),
+                                                    .combine = "c",
+                                                    .export = c(".compare_peaks"),
+                                                    .options.snow = opts),
+                                   {
+                                     i <- idx_no_tagNum[x]
+                                     loop(i)
+                                   })
+    snow::stopCluster(cl)
+    gc()
+  }else stop("Thread wrong!")
+  peaksInfo$tagNum[idx_no_tagNum] <- tagNum_vec_no_tagNum
+  data$peaksInfo <- peaksInfo
+  return(data)
+}
 
 #' @title Peak Grouping
 #' @description

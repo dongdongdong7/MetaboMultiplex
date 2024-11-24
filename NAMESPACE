@@ -3,6 +3,7 @@
 export("%>%")
 export(assign_plexInfo)
 export(assign_tagNum)
+export(assign_tagNum_tolerant)
 export(getSpectra2)
 export(load_AmidoLibrary)
 export(load_DEANSBANK)
