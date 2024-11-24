@@ -10,7 +10,7 @@
   sp2 <- sps %>%
     Spectra::filterDataOrigin(dataOrigin = spectraOrigin) %>%
     Spectra::filterMsLevel(2L) %>%
-    Spectra::filterPrecursorMzRange(c(mzmin - mzdiff, mzmin + mzdiff)) %>%
+    Spectra::filterPrecursorMzRange(c(mzmin - mzdiff, mzmax + mzdiff)) %>%
     Spectra::filterRt(c(rtmin - rtdiff, rtmax + rtdiff))
 
   if(length(sp2) == 0){
