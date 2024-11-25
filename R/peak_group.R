@@ -333,12 +333,14 @@ peakGrouping <- function(data, plexPara, thread = 1, extra_formula = "C14H15NO2S
     sample <- unique(peakGroup$sample[!is.na(peakGroup$sample)])
     reagent_mz_i <- reagent_mz + (ref_plexIdx - 1) * plexPara$deltaMz
     mass <- (ref_mz - reagent_mz_i) * tagNum
-    adduct <- paste0(unique(peakGroup$an1[!is.na(peakGroup$an1)]), collapse = ";")
+    adduct <- unique(peakGroup$an1[!is.na(peakGroup$an1)])
+    if(length(adduct) == 0) adduct <- NULL
+    else adduct <- list(adduct)
     if(mass < 0) mass <- NA
     peakGroup_new <- dplyr::tibble(mass = mass, rt = ref_rt, peaksNum = peaksNum, sample = sample, tagNum = tagNum_real, adduct = adduct, peaks = list(peakGroup))
     return(peakGroup_new)
   }))
-  peakGroup$pgid <- paste0("pg", formatC(1:length(peakGroupList), flag = "0", width = ceiling(log10(length(peakGroupList)))))
+  peakGroup$pgid <- paste0("PG", formatC(1:length(peakGroupList), flag = "0", width = ceiling(log10(length(peakGroupList)))))
   peakGroup <- peakGroup %>%
     dplyr::select(pgid, mass, rt, peaksNum, sample, tagNum, adduct, peaks)
   data$peakGroup <- peakGroup

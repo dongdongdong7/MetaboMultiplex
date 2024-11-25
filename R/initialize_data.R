@@ -107,6 +107,7 @@ peakAnnotation <- function(data, polarity = "positive", adinfo, ppm = 10, thread
   resTable <- purrr::list_rbind(resList)
   resTable <- dplyr::as_tibble(resTable, rownames = "cpid") %>%
     dplyr::select(cpid, cliqueGroup, isotope, mass1, an1)
+  resTable[which(resTable$an1 == ""),]$an1 <- NA
   data$peaksInfo <- dplyr::left_join(data$peaksInfo, resTable, by = c("cpid" = "cpid"))
   return(data)
 }

@@ -16,4 +16,4 @@ data <- assign_plexInfo(data, plexPara, thread = 3)
 data <- assign_tagNum(data, plexPara = plexPara, thread = 3)
 data <- assign_tagNum_tolerant(data, plexPara = plexPara, isoRt = 1, thread = 3)
 data <- peakGrouping(data = data, plexPara = plexPara, thread = 1)
-data$peakGroupList[[1]][[3]]
+data <- peakAligning(data = data, plexPara = plexPara)
