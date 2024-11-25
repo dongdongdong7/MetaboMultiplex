@@ -338,6 +338,9 @@ peakGrouping <- function(data, plexPara, thread = 1, extra_formula = "C14H15NO2S
     peakGroup_new <- dplyr::tibble(mass = mass, rt = ref_rt, peaksNum = peaksNum, sample = sample, tagNum = tagNum_real, adduct = adduct, peaks = list(peakGroup))
     return(peakGroup_new)
   }))
+  peakGroup$pgid <- paste0("pg", formatC(1:length(peakGroupList), flag = "0", width = ceiling(log10(length(peakGroupList)))))
+  peakGroup <- peakGroup %>%
+    dplyr::select(pgid, mass, rt, peaksNum, sample, tagNum, adduct, peaks)
   data$peakGroup <- peakGroup
   return(data)
 }
