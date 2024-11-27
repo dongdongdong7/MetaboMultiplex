@@ -51,6 +51,7 @@ load_DEANSBANK <- function(thread = 1){
   DEANSBANK <- MsBackendMsp::readMsp(DEANSBANKPath,
                                      mapping = c(name = "Name", accession = "DB#", mslevel = "MsLevel", num_pekas = "Num Peaks"),
                                      BPPARAM = BiocParallel::SnowParam(workers = thread))
+  DEANSBANK <- dplyr::as_tibble(DEANSBANK)
   return(DEANSBANK)
 }
 

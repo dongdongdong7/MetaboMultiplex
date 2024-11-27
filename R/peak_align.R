@@ -9,7 +9,7 @@
 #' @examples
 #' data <- peakAligning(data = data, plexPara = plexPara)
 peakAligning <- function(data, plexPara){
-  browser()
+  message("Align peakGroup from samples...")
   peakGroup <- data$peakGroup %>%
     dplyr::filter(!is.na(mass))
     #dplyr::filter(stringr::str_detect(adduct, pattern = "\\[M\\+H\\]\\+") | is.na(adduct))
@@ -47,6 +47,19 @@ peakAligning <- function(data, plexPara){
     featureGroup <- dplyr::tibble(mass = mass_i, rt = rt_i, pgid = list(pgid_vec),peaksNum = peaksNum_i, tagNum = tagNum_i, adduct = adduct_i)
     return(featureGroup)
   }))
+  message("Assign ms2 for featureGroup...")
+  spectra_list <- lapply(1:nrow(featureGroup), function(i){
+    pgid_vec <- featureGroup[i, ]$pgid[[1]]
+    pgid_vec <- pgid_vec[!is.na(pgid_vec)]
+    peakGroup_pgid <- peakGroup %>% dplyr::filter(pgid %in% pgid_vec)
+    spectra_plex_1 <- lapply(peakGroup_pgid$peaks, function(peaks){
+      peaks$spectra[[1]]
+    })
+    spectra_plex_1 <- spectra_plex_1[!sapply(spectra_plex_1, is.null)]
+    if(length(spectra_plex_1) == 0) return(NULL)
+    else return(spectra_plex_1[[1]])
+  })
+  featureGroup$spectra <- spectra_list
   data$featureGroup <- featureGroup
   return(data)
 }
