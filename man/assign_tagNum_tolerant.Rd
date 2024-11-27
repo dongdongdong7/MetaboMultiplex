@@ -4,14 +4,14 @@
 \alias{assign_tagNum_tolerant}
 \title{Assign tagNum with a tolerant method}
 \usage{
-assign_tagNum_tolerant(data, plexPara, isoRt = 1, thread = 3)
+assign_tagNum_tolerant(data, isoMzDiff = 0.01, isoRtDiff = 1, thread = 3)
 }
 \arguments{
 \item{data}{data list.}
 
-\item{plexPara}{plexPara list.}
+\item{isoMzDiff}{The mz difference between a compound and its isotope.}
 
-\item{isoRt}{Isotope retention time search range.}
+\item{isoRtDiff}{The rt difference between a compound and its isotope.}
 
 \item{thread}{thread.}
 }

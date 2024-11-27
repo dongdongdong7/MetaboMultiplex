@@ -60,7 +60,7 @@ fgIdentification <- function(data, cmpLibrary, ms2Library, rt_weight = 0.7, ms2_
       candidates_rt_score <- round(candidates_rt_score[order(score, decreasing = TRUE)], digits = 4)
       candidates_ms2_score <- round(candidates_ms2_score[order(score, decreasing = TRUE)], digits = 4)
       score <- round(score[order(score, decreasing = TRUE)], digits = 4)
-      data.frame(accession = candidates$accession, score = score, score_rt = candidates_rt_score, score_ms2 = candidates_ms2_score)
+      data.frame(accession = candidates$accession, name = candidates$name, formula = candidates$chemical_formula, score = score, score_rt = candidates_rt_score, score_ms2 = candidates_ms2_score)
     }
     else return(NULL)
   })
@@ -70,16 +70,22 @@ fgIdentification <- function(data, cmpLibrary, ms2Library, rt_weight = 0.7, ms2_
     idenRes <- idenResList[[i]]
     if(!is.null(idenRes)){
       accession_vec <- paste0(idenRes$accession, collapse = ";")
+      name_vec <- paste0(idenRes$name, collapse = ";")
+      formula_vec <- paste0(idenRes$formula, collapse = ";")
       score_vec <- paste0(idenRes$score, collapse = ";")
       score_rt_vec <- paste0(idenRes$score_rt, collapse = ";")
       score_ms2_vec <- paste0(idenRes$score_ms2, collapse = ";")
     }else{
       accession_vec <- ""
+      name_vec <- ""
+      formula_vec <- ""
       score_vec <- ""
       score_rt_vec <- ""
       score_ms2_vec <- ""
     }
     featureGrop_i$accession <- accession_vec
+    featureGrop_i$name <- name_vec
+    featureGrop_i$formula <- formula_vec
     featureGrop_i$score <- score_vec
     featureGrop_i$score_rt <- score_rt_vec
     featureGrop_i$score_ms2 <- score_ms2_vec

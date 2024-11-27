@@ -60,6 +60,9 @@ peakAligning <- function(data, plexPara){
     else return(spectra_plex_1[[1]])
   })
   featureGroup$spectra <- spectra_list
+  featureGroup$fgid <- paste0("FG", formatC(1:nrow(featureGroup), flag = "0", width = ceiling(log10(nrow(featureGroup)))))
+  featureGroup <- featureGroup %>%
+    dplyr::select(fgid, mass, rt, pgid, peaksNum, tagNum, adduct, spectra)
   data$featureGroup <- featureGroup
   return(data)
 }

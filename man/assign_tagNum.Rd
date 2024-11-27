@@ -4,12 +4,12 @@
 \alias{assign_tagNum}
 \title{Assign tagNum}
 \usage{
-assign_tagNum(data, plexPara, thread = 1)
+assign_tagNum(data, isoMzDiff = 0.01, thread = 1)
 }
 \arguments{
 \item{data}{data list.}
 
-\item{plexPara}{plexPara list.}
+\item{isoMzDiff}{The mz difference between a compound and its isotope.}
 
 \item{thread}{thread.}
 }
