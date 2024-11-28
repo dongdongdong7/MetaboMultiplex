@@ -22,7 +22,7 @@ peakAnnotation(
 
 \item{ppm}{Relative error in ppm to consider that two features have the mass difference of an isotope.}
 
-\item{chunkSize}{Sample size per thread.}
+\item{chunkSize}{Sample size per parallel operation.}
 
 \item{thread}{Parallel thread.}
 }

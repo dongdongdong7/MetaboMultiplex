@@ -51,7 +51,7 @@ peakPicking <- function(data, xcmsPara, chunkSize = 3L, BPPARAM = BiocParallel::
 #' @param polarity positive or negative.
 #' @param adinfo adduct information.
 #' @param ppm Relative error in ppm to consider that two features have the mass difference of an isotope.
-#' @param chunkSize Sample size per thread.
+#' @param chunkSize Sample size per parallel operation.
 #' @param thread Parallel thread.
 #'
 #' @return A data list.
@@ -70,20 +70,15 @@ peakPicking <- function(data, xcmsPara, chunkSize = 3L, BPPARAM = BiocParallel::
 peakAnnotation <- function(data, polarity = "positive", adinfo, ppm = 10, chunkSize = 1, thread = 1){
   chunks <- split(data$rawData, cut(seq_along(data$rawData), length(data$rawData), labels = FALSE))
   chunks <- split(chunks, rep(1:(length(chunks) %/% chunkSize + 1), each = chunkSize, length.out = length(chunks)))
-  for(i in 1:length(chunks)){
-    for(j in 1:length(chunks[[i]])){
-      attributes(chunks[[i]][[j]])$order <- i
-    }
-  }
   loop <- function(data_n){
     data_n <- xcms:::.XCMSnExp2xcmsSet(data_n)
     set.seed(2)
-    ex.cliqueGroups <- cliqueMS::getCliques(data_n, filter = TRUE, silent = FALSE)
-    ex.Isotopes <- cliqueMS::getIsotopes(ex.cliqueGroups, ppm = ppm, maxCharge = 4)
-    ex.Adducts <- cliqueMS::getAnnotation(ex.Isotopes, ppm = ppm,
+    data_n <- cliqueMS::getCliques(data_n, filter = TRUE, silent = FALSE)
+    data_n <- cliqueMS::getIsotopes(data_n, ppm = ppm, maxCharge = 4)
+    data_n <- cliqueMS::getAnnotation(data_n, ppm = ppm,
                                           adinfo = adinfo, polarity = polarity,
                                           normalizeScore = TRUE)
-    resTable <- ex.Adducts@peaklist[, c("mz", "rt", "maxo", "sample", "cliqueGroup", "isotope", "mass1", "an1")]
+    resTable <- data_n@peaklist[, c("mz", "rt", "maxo", "sample", "cliqueGroup", "isotope", "mass1", "an1")]
     return(resTable)
   }
   # pb <- progress::progress_bar$new(
@@ -95,18 +90,26 @@ peakAnnotation <- function(data, polarity = "positive", adinfo, ppm = 10, chunkS
   # )
   # opts <- list(progress = function(n) {pb$tick()})
   pb <- utils::txtProgressBar(max = length(chunks), style = 3)
+  message("\n")
   progress <- function(n){utils::setTxtProgressBar(pb, n)}
   opts <- list(progress = progress)
   cl <- snow::makeCluster(thread)
   doSNOW::registerDoSNOW(cl) #doSNOW:::doSNOW()
-  resList <- foreach::`%dopar%`(foreach::foreach(chunk = chunks, n = 1:length(chunks),
-                                                 .packages = c("cliqueMS", "xcms"),
-                                                 #.verbose = TRUE,
-                                                 .options.snow = opts),
-                                {
-                                  resTable <- purrr::list_rbind(lapply(chunk, loop))
-                                  return(resTable)
-                                })
+  parallel::clusterExport(cl, c("adinfo", "loop", "polarity", "ppm"), envir = environment())
+  resList <- lapply(1:length(chunks), function(i) {
+    message(paste0(i, " / ", length(chunks)))
+    resList <- foreach::`%dopar%`(foreach::foreach(x = chunks[[i]], n = 1:length(chunks[[i]]),
+                                                   .packages = c("cliqueMS", "xcms"),
+                                                   #.verbose = TRUE,
+                                                   #.export = c("adinfo", "loop", "polarity", "ppm"),
+                                                   .options.snow = opts),
+                                  {
+                                    loop(x)
+                                  })
+    message("\n")
+    resDf <- purrr::list_rbind(resList)
+    return(resDf)
+  })
   snow::stopCluster(cl)
   gc()
   resTable <- purrr::list_rbind(resList)
