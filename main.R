@@ -10,13 +10,15 @@ data <- peakPicking(data, xcmsPara = xcmsPara, chunkSize = 3, BPPARAM = BiocPara
 data(positive.adinfo, package = "cliqueMS")
 positive.adinfo <- positive.adinfo[positive.adinfo$adduct %in%
                                      c("[M+H]+", "[M+H-H2O]+", "[M+Na]+", "[M+H-NH3]+", "[M+K]+", "[M+NH4]+"),]
-data <- peakAnnotation(data, polarity = "positive", adinfo = positive.adinfo, thread = 3)
+data <- peakAnnotation(data, polarity = "positive", adinfo = positive.adinfo, chunkSize = 2, thread = 2)
 data <- getSpectra2(data = data, thread = 5)
+data <- assign_tagNum(data, thread = 3)
+data <- assign_tagNum_tolerant(data, thread = 3)
 data <- assign_plexInfo(data, plexPara, thread = 3)
-data <- assign_tagNum(data, plexPara = plexPara, thread = 3)
-data <- assign_tagNum_tolerant(data, plexPara = plexPara, isoRt = 1, thread = 3)
 data <- peakGrouping(data = data, plexPara = plexPara, thread = 1)
 data <- peakAligning(data = data, plexPara = plexPara)
 cmpLibrary <- load_AmidoLibrary()
 ms2Library <- load_DEANSBANK(thread = 3)
 data <- fgIdentification(data = data, cmpLibrary = cmpLibrary, ms2Library = ms2Library)
+data <- getQuantRes(data, plexPara = plexPara, quant = "into")
+exportRes(data = data, file = "D:/fudan/Projects/2024/MultichannelR/Progress/build_package/tmp/resTable.xlsx")

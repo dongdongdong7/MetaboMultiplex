@@ -51,6 +51,7 @@ peakPicking <- function(data, xcmsPara, chunkSize = 3L, BPPARAM = BiocParallel::
 #' @param polarity positive or negative.
 #' @param adinfo adduct information.
 #' @param ppm Relative error in ppm to consider that two features have the mass difference of an isotope.
+#' @param chunkSize Sample size per thread.
 #' @param thread Parallel thread.
 #'
 #' @return A data list.
@@ -65,17 +66,19 @@ peakPicking <- function(data, xcmsPara, chunkSize = 3L, BPPARAM = BiocParallel::
 #' data(positive.adinfo, package = "cliqueMS")
 #' positive.adinfo <- positive.adinfo[positive.adinfo$adduct %in%
 #'                                      c("[M+H]+", "[M+H-H2O]+", "[M+Na]+", "[M+H-NH3]+", "[M+K]+", "[M+NH4]+"),]
-#' data <- peakAnnotation(data, polarity = "positive", adinfo = positive.adinfo, thread = 3)
-peakAnnotation <- function(data, polarity = "positive", adinfo, ppm = 10, thread = 1){
-  iterList <- lapply(1:length(data$rawData), function(i) {
-    data_n <- data$rawData[i]
-    attributes(data_n)$order <- i
-    return(data_n)
-  })
+#' data <- peakAnnotation(data, polarity = "positive", adinfo = positive.adinfo, chunkSize = 1, thread = 1)
+peakAnnotation <- function(data, polarity = "positive", adinfo, ppm = 10, chunkSize = 1, thread = 1){
+  chunks <- split(data$rawData, cut(seq_along(data$rawData), length(data$rawData), labels = FALSE))
+  chunks <- split(chunks, rep(1:(length(chunks) %/% chunkSize + 1), each = chunkSize, length.out = length(chunks)))
+  for(i in 1:length(chunks)){
+    for(j in 1:length(chunks[[i]])){
+      attributes(chunks[[i]][[j]])$order <- i
+    }
+  }
   loop <- function(data_n){
-    data_xs <- xcms:::.XCMSnExp2xcmsSet(data_n)
+    data_n <- xcms:::.XCMSnExp2xcmsSet(data_n)
     set.seed(2)
-    ex.cliqueGroups <- cliqueMS::getCliques(data_xs, filter = TRUE, silent = FALSE)
+    ex.cliqueGroups <- cliqueMS::getCliques(data_n, filter = TRUE, silent = FALSE)
     ex.Isotopes <- cliqueMS::getIsotopes(ex.cliqueGroups, ppm = ppm, maxCharge = 4)
     ex.Adducts <- cliqueMS::getAnnotation(ex.Isotopes, ppm = ppm,
                                           adinfo = adinfo, polarity = polarity,
@@ -83,27 +86,29 @@ peakAnnotation <- function(data, polarity = "positive", adinfo, ppm = 10, thread
     resTable <- ex.Adducts@peaklist[, c("mz", "rt", "maxo", "sample", "cliqueGroup", "isotope", "mass1", "an1")]
     return(resTable)
   }
-  pb <- utils::txtProgressBar(max = length(iterList), style = 3)
-  if(thread == 1){
-    resList <- lapply(1:length(iterList), function(i) {
-      utils::setTxtProgressBar(pb, i)
-      data_n <- iterList[[i]]
-      loop(data_n)
-    })
-  }else if(thread > 1){
-    cl <- snow::makeCluster(thread)
-    doSNOW::registerDoSNOW(cl)
-    opts <- list(progress = function(n) utils::setTxtProgressBar(pb,
-                                                                 n))
-    resList <- foreach::`%dopar%`(foreach::foreach(i = iterList,
-                                                   .packages = c("cliqueMS", "xcms"),
-                                                   .options.snow = opts),
-                                  {
-                                    loop(i)
-                                  })
-    snow::stopCluster(cl)
-    gc()
-  }else stop("Thread wrong!")
+  # pb <- progress::progress_bar$new(
+  #   format = paste0("[:bar] :current/:",
+  #                   "total (:percent) in ",
+  #                   ":elapsed"),
+  #   total = length(data$rawData),
+  #   clear = FALSE
+  # )
+  # opts <- list(progress = function(n) {pb$tick()})
+  pb <- utils::txtProgressBar(max = length(chunks), style = 3)
+  progress <- function(n){utils::setTxtProgressBar(pb, n)}
+  opts <- list(progress = progress)
+  cl <- snow::makeCluster(thread)
+  doSNOW::registerDoSNOW(cl) #doSNOW:::doSNOW()
+  resList <- foreach::`%dopar%`(foreach::foreach(chunk = chunks, n = 1:length(chunks),
+                                                 .packages = c("cliqueMS", "xcms"),
+                                                 #.verbose = TRUE,
+                                                 .options.snow = opts),
+                                {
+                                  resTable <- purrr::list_rbind(lapply(chunk, loop))
+                                  return(resTable)
+                                })
+  snow::stopCluster(cl)
+  gc()
   resTable <- purrr::list_rbind(resList)
   resTable <- dplyr::as_tibble(resTable, rownames = "cpid") %>%
     dplyr::select(cpid, cliqueGroup, isotope, mass1, an1)

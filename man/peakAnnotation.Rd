@@ -4,7 +4,14 @@
 \alias{peakAnnotation}
 \title{Peak Annotation}
 \usage{
-peakAnnotation(data, polarity = "positive", adinfo, ppm = 10, thread = 1)
+peakAnnotation(
+  data,
+  polarity = "positive",
+  adinfo,
+  ppm = 10,
+  chunkSize = 1,
+  thread = 1
+)
 }
 \arguments{
 \item{data}{data list with rawData after peak picking.}
@@ -14,6 +21,8 @@ peakAnnotation(data, polarity = "positive", adinfo, ppm = 10, thread = 1)
 \item{adinfo}{adduct information.}
 
 \item{ppm}{Relative error in ppm to consider that two features have the mass difference of an isotope.}
+
+\item{chunkSize}{Sample size per thread.}
 
 \item{thread}{Parallel thread.}
 }
@@ -32,5 +41,5 @@ data <- peakPicking(data, xcmsPara = set_xcmsPara())
 data(positive.adinfo, package = "cliqueMS")
 positive.adinfo <- positive.adinfo[positive.adinfo$adduct \%in\%
                                      c("[M+H]+", "[M+H-H2O]+", "[M+Na]+", "[M+H-NH3]+", "[M+K]+", "[M+NH4]+"),]
-data <- peakAnnotation(data, polarity = "positive", adinfo = positive.adinfo, thread = 3)
+data <- peakAnnotation(data, polarity = "positive", adinfo = positive.adinfo, chunkSize = 1, thread = 1)
 }

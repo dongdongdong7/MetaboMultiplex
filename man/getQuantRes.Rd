@@ -4,12 +4,14 @@
 \alias{getQuantRes}
 \title{Get Quant Result}
 \usage{
-getQuantRes(data, plexPara)
+getQuantRes(data, plexPara, quant = c("into", "intb", "maxo")[1])
 }
 \arguments{
 \item{data}{data list.}
 
 \item{plexPara}{plexPara.}
+
+\item{quant}{Quant type.}
 }
 \value{
 A data list.
