@@ -9,7 +9,7 @@
                             expandRt = 2, expandMz = 0.01, minProp = 0.75)
     dataPara <- set_dataPara(data_dir = "D:/fudan/Projects/2024/MultichannelR/Progress/build_package/test_data/AP/mix1/",
                              res_dir = "D:/fudan/Projects/2024/MultichannelR/Progress/build_package/tmp",
-                             sampleData = data.frame(sample_id = c("mix1_1", "mix1_2", "mix1_3"), injection_index = 1:3))
+                             sampleData = data.frame(sample_id = c("mix1_1", "mix1_2", "mix1_3"), injection_index = c(1,2,3)))
     data <- load_data(dataPara = dataPara)
     data <- peakPicking(data, xcmsPara = xcmsPara, chunkSize = 3, BPPARAM = BiocParallel::SnowParam(workers = 3))
     data(positive.adinfo, package = "cliqueMS")

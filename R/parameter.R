@@ -95,6 +95,7 @@ set_dataPara <- function(data_dir, res_dir, sampleData){
   files_path <- list.files(data_dir, pattern = ".mzML")
   files_path <- paste0(data_dir, files_path)
   sampleData$sample_path <- files_path
+  sampleData <- sampleData[order(sampleData$injection_index), ]
 
   dataPara <- list(sampleInfo = sampleData,
                    sampleNumber = nrow(sampleData),
