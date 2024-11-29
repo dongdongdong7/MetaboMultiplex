@@ -68,7 +68,8 @@ peakPicking <- function(data, xcmsPara, chunkSize = 3L, BPPARAM = BiocParallel::
 #'                                      c("[M+H]+", "[M+H-H2O]+", "[M+Na]+", "[M+H-NH3]+", "[M+K]+", "[M+NH4]+"),]
 #' data <- peakAnnotation(data, polarity = "positive", adinfo = positive.adinfo, chunkSize = 1, thread = 1)
 peakAnnotation <- function(data, polarity = "positive", adinfo, ppm = 10, chunkSize = 1, thread = 1){
-  chunks <- split(data$rawData, cut(seq_along(data$rawData), length(data$rawData), labels = FALSE))
+  if(length(data$rawData) == 1) chunks <- list(data$rawData)
+  else chunks <- split(data$rawData, cut(seq_along(data$rawData), length(data$rawData), labels = FALSE))
   chunks <- split(chunks, rep(1:(length(chunks) %/% chunkSize + 1), each = chunkSize, length.out = length(chunks)))
   loop <- function(data_n){
     data_n <- xcms:::.XCMSnExp2xcmsSet(data_n)

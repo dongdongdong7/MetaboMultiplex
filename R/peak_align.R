@@ -19,7 +19,8 @@ peakAligning <- function(data, plexPara){
     if(i %in% delete_idx) return(NULL)
     sampleIdx_i <- peakGroup[i, ]$sample
     sampleIdx_o <- sampleIdx_all[sampleIdx_all != sampleIdx_i]
-    idx <- sapply(sampleIdx_o, function(j) {
+    if(length(sampleIdx_o) == 0) idx <- c()
+    else idx <- sapply(sampleIdx_o, function(j) {
       idx_j <- which(dplyr::near(peakGroup$mass, peakGroup[i, ]$mass, tol = plexPara$tolMz1) &
                        dplyr::near(peakGroup$rt, peakGroup[i, ]$rt, tol = plexPara$deltaRt) &
                        peakGroup$sample == j)
