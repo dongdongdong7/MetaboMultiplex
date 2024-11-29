@@ -99,6 +99,15 @@ assign_tagNum_tolerant <- function(data, isoMzDiff = 0.01, isoRtDiff = 1,thread 
                          dplyr::near(peaksInfo$rt, peaksInfo[i, ]$rt, tol = isoRtDiff) &
                          peaksInfo$maxo < peaksInfo[i, ]$maxo)
       if(length(idx_tmp) == 0) idx_tmp <- NA
+      else if(length(idx_tmp) > 1){
+        ref_chr <- xcms::chromPeakChromatograms(data$rawData, peaks = peaksInfo[i, ]$cpid)[1]
+        ppc_vec <- sapply(idx_tmp, function(j) {
+          if(is.na(j)) return(NA)
+          tmp_chr <- xcms::chromPeakChromatograms(data$rawData, peaks = peaksInfo[j, ]$cpid)[1]
+          .compare_peaks(tmp_chr, ref_chr)
+        })
+        idx_tmp <- idx_tmp[which.max(ppc_vec)]
+      }
       return(idx_tmp)
     })
     if(length(idx[!is.na(idx)]) > 1){
