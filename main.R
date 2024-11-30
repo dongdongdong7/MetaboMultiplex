@@ -25,7 +25,7 @@
   {
     data_Amine <- assign_plexInfo(data, plexPara = plexPara_Amine, thread = 3)
     data_Amine <- peakGrouping(data = data_Amine, plexPara = plexPara_Amine, thread = 1)
-    data_Amine <- peakAligning(data = data_Amine, plexPara = plexPara_Amine)
+    data_Amine <- peakAligning(data = data_Amine, absMz = 0.02, absRt = 40)
     cmpLibrary_Amine <- load_AmidoLibrary()
     data_Amine <- fgIdentification(data = data_Amine, cmpLibrary = cmpLibrary_Amine, ms2Library = ms2Library)
     data_Amine <- getQuantRes(data_Amine, plexPara = plexPara_Amine, quant = "into")
@@ -35,7 +35,7 @@
   {
     data_Phenol <- assign_plexInfo(data, plexPara = plexPara_Phenol, thread = 3)
     data_Phenol <- peakGrouping(data = data_Phenol, plexPara = plexPara_Phenol, thread = 1)
-    data_Phenol <- peakAligning(data = data_Phenol, plexPara = plexPara_Phenol)
+    data_Phenol <- peakAligning(data = data_Phenol, absMz = 0.02, absRt = 40)
     cmpLibrary_Phenol <- load_PheHydroLibrary()
     data_Phenol <- fgIdentification(data = data_Phenol, cmpLibrary = cmpLibrary_Phenol, ms2Library = ms2Library)
     data_Phenol <- getQuantRes(data_Phenol, plexPara = plexPara_Phenol, quant = "into")
@@ -69,7 +69,7 @@
   {
     data_Alcohol <- assign_plexInfo(data, plexPara = plexPara_Alcohol, thread = 3)
     data_Alcohol <- peakGrouping(data = data_Alcohol, plexPara = plexPara_Alcohol, thread = 1)
-    data_Alcohol <- peakAligning(data = data_Alcohol, plexPara = plexPara_Alcohol)
+    data_Alcohol <- peakAligning(data = data_Alcohol, absMz = 0.02, absRt = 40)
     cmpLibrary_Alcohol <- load_HydroxylLibrary()
     data_Alcohol <- fgIdentification(data = data_Alcohol, cmpLibrary = cmpLibrary_Alcohol, ms2Library = ms2Library)
     data_Alcohol <- getQuantRes(data_Alcohol, plexPara = plexPara_Alcohol, quant = "into")

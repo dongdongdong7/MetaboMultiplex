@@ -4,12 +4,14 @@
 \alias{peakAligning}
 \title{Peak Aligning}
 \usage{
-peakAligning(data, plexPara)
+peakAligning(data, absMz = 0.02, absRt = 40)
 }
 \arguments{
 \item{data}{data list.}
 
-\item{plexPara}{plexPara list.}
+\item{absRt}{Maximum tolerated distance for retention time of peakGroups which are from same metabolite.}
+
+\item{absMass}{Maximum tolerated distance for mass values of peakGroups which are from same metabolite.}
 }
 \value{
 A data list.

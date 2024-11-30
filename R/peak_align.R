@@ -1,18 +1,20 @@
 #' @title Peak Aligning
 #'
 #' @param data data list.
-#' @param plexPara plexPara list.
+#' @param absMass Maximum tolerated distance for mass values of peakGroups which are from same metabolite.
+#' @param absRt Maximum tolerated distance for retention time of peakGroups which are from same metabolite.
 #'
 #' @return A data list.
 #' @export
 #'
 #' @examples
 #' data <- peakAligning(data = data, plexPara = plexPara)
-peakAligning <- function(data, plexPara){
+peakAligning <- function(data, absMz = 0.02, absRt = 40){
   message("Align peakGroup from samples...")
   peakGroup <- data$peakGroup %>%
     dplyr::filter(!is.na(mass))
     #dplyr::filter(stringr::str_detect(adduct, pattern = "\\[M\\+H\\]\\+") | is.na(adduct))
+  peakGroup$tagNum[which(is.na(peakGroup$tagNum))] <- 1
   delete_idx <<- c()
   sampleIdx_all <- unique(peakGroup$sample)
   featureGroupIdxList <- lapply(1:nrow(peakGroup), function(i) {
@@ -21,8 +23,9 @@ peakAligning <- function(data, plexPara){
     sampleIdx_o <- sampleIdx_all[sampleIdx_all != sampleIdx_i]
     if(length(sampleIdx_o) == 0) idx <- c()
     else idx <- sapply(sampleIdx_o, function(j) {
-      idx_j <- which(dplyr::near(peakGroup$mass, peakGroup[i, ]$mass, tol = plexPara$tolMz1) &
-                       dplyr::near(peakGroup$rt, peakGroup[i, ]$rt, tol = plexPara$deltaRt) &
+      idx_j <- which(dplyr::near(peakGroup$mass, peakGroup[i, ]$mass, tol = absMz) &
+                       dplyr::near(peakGroup$rt, peakGroup[i, ]$rt, tol = absRt) &
+                       peakGroup$tagNum == peakGroup[i, ]$tagNum &
                        peakGroup$sample == j)
       idx_j <- idx_j[which.min(abs(peakGroup[i, ]$rt - peakGroup[idx_j, ]$rt))]
       if(length(idx_j) == 0) return(NA)
