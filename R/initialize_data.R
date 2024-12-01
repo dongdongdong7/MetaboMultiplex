@@ -37,7 +37,9 @@ load_data <- function(dataPara){
 #' @examples
 #' data <- peakPicking(data, xcmsPara = set_xcmsPara())
 peakPicking <- function(data, xcmsPara, chunkSize = 3L, BPPARAM = BiocParallel::SnowParam(workers = 3)){
+  message("Peak picking...")
   rawData_new <- xcms::findChromPeaks(object = data$rawData, param = xcmsPara$centwavePara, msLevel = 1L, chunkSize = chunkSize, BPPARAM = BPPARAM)
+  message("Peak merging...")
   rawData_new <- xcms::refineChromPeaks(object = rawData_new, param = xcmsPara$mergepeakPara, msLevel = 1L, chunkSize = chunkSize, BPPARAM = BPPARAM)
   peaksInfo <- dplyr::as_tibble(cbind(xcms::chromPeaks(rawData_new), xcms::chromPeakData(rawData_new)), rownames = "cpid")
   return(list(rawData = rawData_new,

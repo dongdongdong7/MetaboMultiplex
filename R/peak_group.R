@@ -248,8 +248,10 @@ peakGrouping <- function(data, plexPara, thread = 1, extra_formula = "C14H15NO2S
       dplyr::filter(is.na(plexIdx)) %>%
       dplyr::arrange(mz)
     delete_idx <<- c()
-    print(length(delete_idx))
+    #print(length(delete_idx))
+    pb <- utils::txtProgressBar(max = nrow(plexPara$plexNumber - 1), style = 3)
     peakGroupListAll <- lapply(1:(plexPara$plexNumber - 1), function(start_loop) {
+      utils::setTxtProgressBar(pb, start_loop)
       peakGroupList <- lapply(1:nrow(peaksInfo_n_plex), function(i) {
         if(i %in% delete_idx) return(NULL)
         if(peaksInfo_n_plex[i, ]$plexIdx == start_loop){
@@ -319,7 +321,7 @@ peakGrouping <- function(data, plexPara, thread = 1, extra_formula = "C14H15NO2S
       return(x)
     })
     #rm(delete_idx)
-    print(length(delete_idx))
+    #print(length(delete_idx))
     return(peakGroupListAll)
   })
   peakGroupList <- purrr::list_flatten(peakGroupList)
