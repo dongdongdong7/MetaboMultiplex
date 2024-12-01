@@ -314,6 +314,7 @@ peakGrouping <- function(data, plexPara, thread = 1, extra_formula = "C14H15NO2S
             fill_chr <- fill_chrs[k]
             .compare_peaks(chr1 = fill_chr, ref_chr)
           })
+          if(all(is.na(ppc_vec))) return(NA)
           idx <- idx[which.max(ppc_vec)]
           ppc <- ppc_vec[which.max(ppc_vec)]
           if(ppc < 0.8) idx <- NA
@@ -363,7 +364,6 @@ peakGrouping <- function(data, plexPara, thread = 1, extra_formula = "C14H15NO2S
   data$peakGroup <- peakGroup
   return(data)
 }
-
 # Fill blank plex.
 # test <- xcms::manualChromPeaks(data$rawData,
 #                                chromPeaks = cbind(
