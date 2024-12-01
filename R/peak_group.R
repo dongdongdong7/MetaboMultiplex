@@ -117,8 +117,11 @@ assign_tagNum_tolerant <- function(data, isoMzDiff = 0.01, isoRtDiff = 1,thread 
         tmp_chr <- xcms::chromPeakChromatograms(data$rawData, peaks = peaksInfo[j, ]$cpid)[1]
         .compare_peaks(tmp_chr, ref_chr)
       })
-      tmp <- 1:4
-      idx[tmp[-which.max(ppc_vec) ]] <- NA
+      if(all(is.na(ppc_vec))) return(NA) # ppc_vec all NA
+      else{
+        tmp <- 1:4
+        idx[tmp[-which.max(ppc_vec) ]] <- NA
+      }
     }
     else if(all(is.na(idx))) return(NA)
     return(which(!is.na(idx)))
@@ -128,6 +131,7 @@ assign_tagNum_tolerant <- function(data, isoMzDiff = 0.01, isoRtDiff = 1,thread 
   if(thread == 1){
     tagNum_vec_no_tagNum <- sapply(1:length(idx_no_tagNum), function(x) {
       utils::setTxtProgressBar(pb, x)
+      #print(paste0(x, "/", length(idx_no_tagNum)))
       i <- idx_no_tagNum[x]
       loop(i)
     })
