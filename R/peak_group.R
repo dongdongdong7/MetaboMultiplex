@@ -352,7 +352,7 @@ peakGrouping <- function(data, plexPara, thread = 1, extra_formula = "C14H15NO2S
     reagent_mz_i <- reagent_mz + (ref_plexIdx - 1) * plexPara$deltaMz
     mass <- (ref_mz - reagent_mz_i) * tagNum
     adduct <- unique(peakGroup$an1[!is.na(peakGroup$an1)])
-    if(length(adduct) == 0) adduct <- NULL
+    if(length(adduct) == 0) adduct <- list(NULL)
     else adduct <- list(adduct)
     if(mass < 0) mass <- NA
     peakGroup_new <- dplyr::tibble(mass = mass, rt = ref_rt, peaksNum = peaksNum, sample = sample, tagNum = tagNum_real, adduct = adduct, peaks = list(peakGroup))
