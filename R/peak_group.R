@@ -27,7 +27,7 @@ assign_tagNum <- function(data, isoMzDiff = 0.01, thread = 1){
       dplyr::filter(sample == peakInfo$sample) %>%
       dplyr::filter(isoGroup == isoIdx)
     if(nrow(isoGroup) >= 2){
-      tagNum <- which(dplyr::near(mean(abs(diff(isoGroup$mz))),
+      tagNum <- which(dplyr::near(mean(abs(diff(sort(isoGroup$mz)))),
                                   c(deltaIsotope1, deltaIsotope2, deltaIsotope3, deltaIsotope4),
                                   tol = isoMzDiff))
       if(length(tagNum) == 0) tagNum <- NA
