@@ -42,6 +42,8 @@ peakPicking <- function(data, xcmsPara, chunkSize = 3L, BPPARAM = BiocParallel::
   message("Peak merging...")
   rawData_new <- xcms::refineChromPeaks(object = rawData_new, param = xcmsPara$mergepeakPara, msLevel = 1L, chunkSize = chunkSize, BPPARAM = BPPARAM)
   peaksInfo <- dplyr::as_tibble(cbind(xcms::chromPeaks(rawData_new), xcms::chromPeakData(rawData_new)), rownames = "cpid")
+  # Assign into to intb whose merge is TRUE
+  peaksInfo$intb[is.na(peaksInfo$intb)] <- peaksInfo$into[is.na(peaksInfo$intb)]
   return(list(rawData = rawData_new,
               peaksInfo = peaksInfo))
 }
