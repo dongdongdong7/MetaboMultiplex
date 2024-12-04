@@ -7,7 +7,7 @@
 .compare_peaks(
   chr1,
   chr2,
-  align = c("apex", "direct")[1],
+  align = c("apex", "direct", "cross")[1],
   method = c("closest", "approx")[1]
 )
 }
@@ -16,7 +16,10 @@
 
 \item{chr2}{A XChromatogram object.}
 
-\item{align}{Whether to align the vertices of two peaks. apex is true and direct is false.}
+\item{align}{Whether to align the vertices of two peaks.
+Apex ("apex") aligns the vertices of two peaks directly.
+Direct ("direct") dose not change the peak rtime dimension.
+Cross uses ("cross") cross-correlation to compare the two peaks.}
 
 \item{method}{Retention time align method.}
 }
