@@ -104,7 +104,8 @@ assign_tagNum_tolerant <- function(data, isoMzDiff = 0.01, isoRtDiff = 1,thread 
         ppc_vec <- sapply(idx_tmp, function(j) {
           if(is.na(j)) return(NA)
           tmp_chr <- xcms::chromPeakChromatograms(data$rawData, peaks = peaksInfo[j, ]$cpid)[1]
-          .compare_peaks(tmp_chr, ref_chr)
+          #.compare_peaks(tmp_chr, ref_chr)
+          .comparePeaks(chr1 = tmp_chr, chr2 = ref_chr, method = "cross-correlation", apexAlign = TRUE, plot = FALSE)
         })
         idx_tmp <- idx_tmp[which.max(ppc_vec)]
       }
@@ -115,7 +116,8 @@ assign_tagNum_tolerant <- function(data, isoMzDiff = 0.01, isoRtDiff = 1,thread 
       ppc_vec <- sapply(idx, function(j) {
         if(is.na(j)) return(NA)
         tmp_chr <- xcms::chromPeakChromatograms(data$rawData, peaks = peaksInfo[j, ]$cpid)[1]
-        .compare_peaks(tmp_chr, ref_chr)
+        #.compare_peaks(tmp_chr, ref_chr)
+        .comparePeaks(chr1 = tmp_chr, chr2 = ref_chr, method = "cross-correlation", apexAlign = TRUE, plot = FALSE)
       })
       if(all(is.na(ppc_vec))) return(NA) # ppc_vec all NA
       else{
@@ -143,7 +145,7 @@ assign_tagNum_tolerant <- function(data, isoMzDiff = 0.01, isoRtDiff = 1,thread 
     tagNum_vec_no_tagNum <- foreach::`%dopar%`(foreach::foreach(x = 1:length(idx_no_tagNum),
                                                                 .packages = c("xcms", "dplyr"),
                                                                 .combine = "c",
-                                                                .export = c(".compare_peaks"),
+                                                                .export = c(".comparePeaks"),
                                                                 .options.snow = opts),
                                                {
                                                  i <- idx_no_tagNum[x]
@@ -271,7 +273,8 @@ peakGrouping <- function(data, plexPara, thread = 1, extra_formula = "C14H15NO2S
               other_chrs <- xcms::chromPeakChromatograms(data$rawData, peaks = other_cpid)
               ppc_vec <- sapply(1:nrow(other_chrs), function(k) {
                 other_chr <- other_chrs[k]
-                .compare_peaks(chr1 = other_chr, target_chr)
+                #.compare_peaks(chr1 = other_chr, target_chr)
+                .comparePeaks(chr1 = other_chr, chr2 = target_chr, method = "cross-correlation", apexAlign = TRUE, plot = FALSE)
               })
               # idx <- idx[which.min(peaksInfo_n_plex$mz[idx] - peaksInfo_n_plex[i, ]$mz)]
               # idx <- idx[which.min(abs(peaksInfo_n_plex$rt[idx] - peaksInfo_n_plex[i, ]$rt))]
@@ -312,7 +315,8 @@ peakGrouping <- function(data, plexPara, thread = 1, extra_formula = "C14H15NO2S
           fill_chrs <- xcms::chromPeakChromatograms(data$rawData, peaks = fill_cpid)
           ppc_vec <- sapply(1:nrow(fill_chrs), function(k) {
             fill_chr <- fill_chrs[k]
-            .compare_peaks(chr1 = fill_chr, ref_chr)
+            #.compare_peaks(chr1 = fill_chr, ref_chr)
+            .comparePeaks(chr1 = fill_chr, chr2 = ref_chr, method = "cross-correlation", apexAlign = TRUE, plot = FALSE)
           })
           if(all(is.na(ppc_vec))) return(NA)
           idx <- idx[which.max(ppc_vec)]

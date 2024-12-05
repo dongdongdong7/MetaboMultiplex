@@ -16,7 +16,7 @@
 #' chr1 <- xcms::chromPeakChromatograms(data$rawData, peaks = "CP24545")[1]
 #' chr2 <- xcms::chromPeakChromatograms(data$rawData, peaks = "CP15906")[1]
 #' compare_peaks(chr1 = chr1, chr2 = chr2)
-.compare_peaks_old <- function(chr1, chr2, align = c("apex", "direct", "cross")[1], method = c("closest", "approx")[1]){
+.compare_peaks <- function(chr1, chr2, align = c("apex", "direct", "cross")[1], method = c("closest", "approx")[1]){
   if(align == "apex"){
     apex1_rt <- chr1@rtime[which.max(chr1@intensity)]
     apex2_rt <- chr2@rtime[which.max(chr2@intensity)]
