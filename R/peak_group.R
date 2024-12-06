@@ -105,7 +105,9 @@ assign_tagNum_tolerant <- function(data, isoMzDiff = 0.01, isoRtDiff = 1,thread 
           if(is.na(j)) return(NA)
           tmp_chr <- xcms::chromPeakChromatograms(data$rawData, peaks = peaksInfo[j, ]$cpid)[1]
           #.compare_peaks(tmp_chr, ref_chr)
-          .comparePeaks(chr1 = tmp_chr, chr2 = ref_chr, method = "cross-correlation", apexAlign = TRUE, plot = FALSE)
+          # Retention time shift of natural isotope 13C is weak
+          # So apexAlign is FALSE, and method is pearson.
+          .comparePeaks(chr1 = tmp_chr, chr2 = ref_chr, method = "pearson", apexAlign = FALSE, plot = FALSE)
         })
         idx_tmp <- idx_tmp[which.max(ppc_vec)]
       }
@@ -117,7 +119,9 @@ assign_tagNum_tolerant <- function(data, isoMzDiff = 0.01, isoRtDiff = 1,thread 
         if(is.na(j)) return(NA)
         tmp_chr <- xcms::chromPeakChromatograms(data$rawData, peaks = peaksInfo[j, ]$cpid)[1]
         #.compare_peaks(tmp_chr, ref_chr)
-        .comparePeaks(chr1 = tmp_chr, chr2 = ref_chr, method = "cross-correlation", apexAlign = TRUE, plot = FALSE)
+        # Retention time shift of natural isotope 13C is weak
+        # So apexAlign is FALSE, and method is pearson.
+        .comparePeaks(chr1 = tmp_chr, chr2 = ref_chr, method = "pearson", apexAlign = FALSE, plot = FALSE)
       })
       if(all(is.na(ppc_vec))) return(NA) # ppc_vec all NA
       else{
