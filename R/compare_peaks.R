@@ -86,6 +86,10 @@
 #' chr2 <- xcms::chromPeakChromatograms(data$rawData, peaks = "CP15906")[1]
 #' .comparePeaks(chr1 = chr1, chr2 = chr2, method = "cross-correlation", apexAlign = FALSE, plot = TRUE)
 .comparePeaks <- function(chr1, chr2, method = c("pearson", "cross-correlation")[1], apexAlign = FALSE, plot = FALSE){
+  if(length(chr1@intensity[!is.na(chr1@intensity)]) < 3 | length(chr2@intensity[!is.na(chr2@intensity)]) < 3){
+    warnings("Intensity length < 3 !")
+    return(NA)
+  }
   if(apexAlign){
     apex1_rt <- chr1@rtime[which.max(chr1@intensity)]
     apex2_rt <- chr2@rtime[which.max(chr2@intensity)]
