@@ -49,7 +49,7 @@
     doSNOW::registerDoSNOW(cl)
     opts <- list(progress = function(n) utils::setTxtProgressBar(pb,
                                                                  n))
-    tagNum_vec <- foreach::`%dopar%`(foreach::foreach(i = 1:nrow(peaksInfo),
+    tagNum_vec <- foreach::`%dopar%`(foreach::foreach(x = 1:length(idx_no_tagNum),
                                                       .packages = c("dplyr"),
                                                       .options.snow = opts,
                                                       .combine = "c"),
