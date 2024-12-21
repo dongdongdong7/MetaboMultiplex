@@ -11,10 +11,14 @@ set_xcmsPara(
   noise = 100,
   prefilter = c(3, 100),
   firstBaselineCheck = FALSE,
+  mergePeak = TRUE,
   expandRt = 2,
   expandMz = 0.01,
   minProp = 0.75
 )
+}
+\arguments{
+\item{mergePeak}{Whether to merge neighbouring peaks.}
 }
 \value{
 A xcmsPara list.
