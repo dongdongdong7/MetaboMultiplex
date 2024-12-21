@@ -10,7 +10,8 @@ set_plexPara(
   deltaMz = 2.0125,
   deltaRt = 30,
   tolMz1 = 0.01,
-  tolMz2 = 0.01
+  tolMz2 = 0.01,
+  pps = 0.8
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ set_plexPara(
 \item{tolMz1}{Mass difference tolerance from same fragment on ms1.}
 
 \item{tolMz2}{Mass difference tolerance from same fragment on ms2.}
+
+\item{pps}{Peak to peak similarity threshold. Only peaks greater than pps are retained during the missing value imputation.}
 }
 \value{
 A parameter list.

@@ -325,7 +325,7 @@ peakGrouping <- function(data, plexPara, thread = 1, extra_formula = "C14H15NO2S
           if(all(is.na(ppc_vec))) return(NA)
           idx <- idx[which.max(ppc_vec)]
           ppc <- ppc_vec[which.max(ppc_vec)]
-          if(ppc < 0.8) idx <- NA
+          if(ppc < plexPara$pps) idx <- NA
         }
         else idx <- NA
         return(idx)

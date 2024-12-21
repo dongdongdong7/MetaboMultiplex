@@ -12,6 +12,7 @@
 #' @param deltaRt Retention time difference range from one peak group.
 #' @param tolMz1 Mass difference tolerance from same fragment on ms1.
 #' @param tolMz2 Mass difference tolerance from same fragment on ms2.
+#' @param pps Peak to peak similarity threshold. Only peaks greater than pps are retained during the missing value imputation.
 #'
 #' @return A parameter list.
 #' @export
@@ -23,7 +24,8 @@ set_plexPara <- function(targetGroup = c("Amine", "Phenol", "Alcohol", "Custom")
                          deltaMz = 2.0125,
                          deltaRt = 30,
                          tolMz1 = 0.01,
-                         tolMz2 = 0.01){
+                         tolMz2 = 0.01,
+                         pps = 0.8){
   if(targetGroup == "Amine"){
     specialFrag <- list(
       c(171.1038, 172.1101, 173.1165, 174.1229, 175.1291, 176.1351),
