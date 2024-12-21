@@ -42,7 +42,7 @@ set_plexPara <- function(targetGroup = c("Amine", "Phenol", "Alcohol", "Custom")
     )
   }else if(targetGroup == "Custom"){
     if(is.null(specialFrag)) stop("Please input specialFrag!")
-    if(!is.numeric(specialFrag)) stop("Please input numeric vector!")
+    if(!is.list(specialFrag)) stop("Please input a list contains numeric vector!")
   }
   if(!all(diff(sapply(specialFrag, length)) == 0)){
     stop("Plex of specialFrag should be fixed!")
