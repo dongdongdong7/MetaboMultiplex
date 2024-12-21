@@ -54,7 +54,8 @@ set_plexPara <- function(targetGroup = c("Amine", "Phenol", "Alcohol", "Custom")
     deltaMz = deltaMz,
     deltaRt = deltaRt,
     tolMz1 = tolMz1,
-    tolMz2 = tolMz2
+    tolMz2 = tolMz2,
+    pps = pps
   )
   return(plexPara)
 }
