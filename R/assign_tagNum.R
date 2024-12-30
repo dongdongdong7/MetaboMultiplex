@@ -113,7 +113,8 @@
           # So apexAlign is FALSE, and method is pearson.
           .comparePeaks(chr1 = tmp_chr, chr2 = ref_chr, method = "pearson", apexAlign = FALSE, plot = FALSE)
         })
-        idx_tmp <- idx_tmp[which.max(ppc_vec)]
+        if (all(is.na(ppc_vec))) idx_tmp <- NA
+        else idx_tmp <- idx_tmp[which.max(ppc_vec)]
       }
       return(idx_tmp)
     })
