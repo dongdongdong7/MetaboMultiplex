@@ -61,6 +61,7 @@ peakPicking <- function(data, xcmsPara, chunkSize = 3L, BPPARAM = BiocParallel::
 #' @param ppm Relative error in ppm to consider that two features have the mass difference of an isotope.
 #' @param chunkSize Sample size per parallel operation.
 #' @param thread Parallel thread.
+#' @param seed a single value, interpreted as an integer, or NULL.
 #'
 #' @return A data list.
 #' @export
@@ -75,18 +76,34 @@ peakPicking <- function(data, xcmsPara, chunkSize = 3L, BPPARAM = BiocParallel::
 #' positive.adinfo <- positive.adinfo[positive.adinfo$adduct %in%
 #'                                      c("[M+H]+", "[M+H-H2O]+", "[M+Na]+", "[M+H-NH3]+", "[M+K]+", "[M+NH4]+"),]
 #' data <- peakAnnotation(data, polarity = "positive", adinfo = positive.adinfo, chunkSize = 1, thread = 1)
-peakAnnotation <- function(data, polarity = "positive", adinfo, ppm = 10, chunkSize = 1, thread = 1){
+peakAnnotation <- function(data, polarity = "positive", adinfo, ppm = 10, chunkSize = 1, thread = 1, seed = 1){
   if(length(data$rawData) == 1) chunks <- list(data$rawData)
   else chunks <- split(data$rawData, cut(seq_along(data$rawData), length(data$rawData), labels = FALSE))
   chunks <- split(chunks, rep(1:(length(chunks) %/% chunkSize + 1), each = chunkSize, length.out = length(chunks)))
   loop <- function(data_n){
     data_n <- xcms:::.XCMSnExp2xcmsSet(data_n)
-    set.seed(2)
+    set.seed(seed)
     data_n <- cliqueMS::getCliques(data_n, filter = TRUE, silent = FALSE)
-    data_n <- cliqueMS::getIsotopes(data_n, ppm = ppm, maxCharge = 4)
-    data_n <- cliqueMS::getAnnotation(data_n, ppm = ppm,
-                                          adinfo = adinfo, polarity = polarity,
-                                          normalizeScore = TRUE)
+    #data_n <- cliqueMS::getIsotopes(data_n, ppm = ppm, maxCharge = 4)
+    data_n <- tryCatch({
+      cliqueMS::getIsotopes(data_n, ppm = ppm, maxCharge = 4)
+    }, error = function(e) {
+      message(paste0("cliqueMS::getIsotopes error:\n", e, "\n", "skip..."))
+      data_n@peaklist$isotope <- "M0"
+      data_n
+    })
+    # data_n <- cliqueMS::getAnnotation(data_n, ppm = ppm,
+    #                                       adinfo = adinfo, polarity = polarity,
+    #                                       normalizeScore = TRUE)
+    data_n <- tryCatch({
+      cliqueMS::getAnnotation(data_n, ppm = ppm,
+                              adinfo = adinfo, polarity = polarity,
+                              normalizeScore = TRUE)
+    }, error = function(e) {
+      message(paste0("cliqueMS::getAnnotation error:\n", e, "\n", "skip..."))
+      data_n$peaklist$mass1 <- NA;data_n$peaklist$an1 <- NA
+      data_n
+    })
     resTable <- data_n@peaklist[, c("mz", "rt", "maxo", "sample", "cliqueGroup", "isotope", "mass1", "an1")]
     return(resTable)
   }

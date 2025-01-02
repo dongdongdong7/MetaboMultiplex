@@ -10,7 +10,8 @@ peakAnnotation(
   adinfo,
   ppm = 10,
   chunkSize = 1,
-  thread = 1
+  thread = 1,
+  seed = 1
 )
 }
 \arguments{
@@ -25,6 +26,8 @@ peakAnnotation(
 \item{chunkSize}{Sample size per parallel operation.}
 
 \item{thread}{Parallel thread.}
+
+\item{seed}{a single value, interpreted as an integer, or NULL.}
 }
 \value{
 A data list.
