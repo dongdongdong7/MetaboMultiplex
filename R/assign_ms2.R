@@ -1,11 +1,30 @@
 # This script is used to store function assigning ms2.
 # 241120
 # Barry Song
-
-# .get_spectra2(sps = sps, cpid = data$peaksInfo[7000, ]$cpid,
-#               mzmin = data$peaksInfo[7000, ]$mzmin, mzmax = data$peaksInfo[7000, ]$mzmax,
-#               rtmin = data$peaksInfo[7000, ]$rtmin, rtmax = data$peaksInfo[7000, ]$rtmax,
-#               spectraOrigin = "D:\\fudan\\Projects\\2024\\MultichannelR\\Progress\\build_package\\test_data\\AP\\mix1\\CXYC136A240712-dx-DEANS-AP_mix1_0712-1.mzML")
+#' @rdname assign_ms2
+#' @title Extract MS2 from Spectra object.
+#' @description
+#' Extract MS2 for compound peak of data from Spectra object.
+#'
+#' @param sps Spectra object.
+#' @param cpid Compound peak id.
+#' @param mzmin Minimum value of peak mz.
+#' @param mzmax Maximum value of peak mz.
+#' @param rtmin Minimum value of peak rt.
+#' @param rtmax Maximum value of peak rt.
+#' @param spectraOrigin Path of spectra.
+#' @param mzdiff c(mzmin - mzdiff, mzmax + mzdiff) constitues the precursor mz search range.
+#' The mzdiff is determined by the number of decimal places in the spectra precursor mz recording.
+#' Example: precursorMz = 312.83, mzdiff = 0.01.
+#' @param rtdiff c(rtmin - rtdiff, rtmax + rtdiff) constitues the retention time search range.
+#'
+#' @return Spectra object.
+#'
+#' @examples
+#' .get_spectra2(sps = sps, cpid = data$peaksInfo[7000, ]$cpid,
+#'               mzmin = data$peaksInfo[7000, ]$mzmin, mzmax = data$peaksInfo[7000, ]$mzmax,
+#'               rtmin = data$peaksInfo[7000, ]$rtmin, rtmax = data$peaksInfo[7000, ]$rtmax,
+#'               spectraOrigin = "D:\\fudan\\Projects\\2024\\MultichannelR\\Progress\\build_package\\test_data\\AP\\mix1\\CXYC136A240712-dx-DEANS-AP_mix1_0712-1.mzML")
 .get_spectra2 <- function(sps, cpid, mzmin, mzmax, rtmin, rtmax, spectraOrigin, mzdiff = 0.001, rtdiff = 0){
   sp2 <- sps %>%
     Spectra::filterDataOrigin(dataOrigin = spectraOrigin) %>%
@@ -21,6 +40,8 @@
 
   return(sp2)
 }
+#' @rdname assign_ms2
+#' @param rt Retention time of target peak.
 .get_spectra2_closeRT <- function(sps, cpid, rt, mzmin, mzmax, rtmin, rtmax, spectraOrigin,mzdiff = 0.001, rtdiff = 0){
   sp2 <- .get_spectra2(sps = sps, cpid = cpid, mzmin = mzmin, mzmax = mzmax, rtmin = rtmin, rtmax = rtmax, spectraOrigin = spectraOrigin, mzdiff = mzdiff, rtdiff = rtdiff)
   if(is.null(sp2)){
@@ -53,10 +74,9 @@
 #' @description
 #' Each peak is assigned a ms2.
 #'
-#' @param data data list with rawData after peak annotation.
-#' @param thread thread.
-#' @param mzdiff mzdiff.
-#' @param rtdiff rtdiff.
+#' @param data Data list with rawData after peak annotation.
+#' @param thread Parallel thread.
+#' @inheritParams .get_spectra2
 #'
 #' @return A data list.
 #' @export

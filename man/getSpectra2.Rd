@@ -7,13 +7,15 @@
 getSpectra2(data, thread = 1, mzdiff = 0.001, rtdiff = 0)
 }
 \arguments{
-\item{data}{data list with rawData after peak annotation.}
+\item{data}{Data list with rawData after peak annotation.}
 
-\item{thread}{thread.}
+\item{thread}{Parallel thread.}
 
-\item{mzdiff}{mzdiff.}
+\item{mzdiff}{c(mzmin - mzdiff, mzmax + mzdiff) constitues the precursor mz search range.
+The mzdiff is determined by the number of decimal places in the spectra precursor mz recording.
+Example: precursorMz = 312.83, mzdiff = 0.01.}
 
-\item{rtdiff}{rtdiff.}
+\item{rtdiff}{c(rtmin - rtdiff, rtmax + rtdiff) constitues the retention time search range.}
 }
 \value{
 A data list.
