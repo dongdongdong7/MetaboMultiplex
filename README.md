@@ -6,7 +6,7 @@ multiplexed untargeted meatbolomics data, which implements several
 critical functions including peak picking, peak grouping, group aligning
 and metabolite identification. ![caption](./assets/Figure1.png) We build
 a in-house library for identification of derivatized metabolites.
-![caption](./assets/Figure2.png)
+<img src="./assets/Figure2.png" width="669" alt="caption" />
 
 ## How to start
 
