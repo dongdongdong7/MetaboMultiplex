@@ -1,5 +1,5 @@
 ---
-title: "index"
+title: "MetaboMultiplex"
 author: "Barry Song"
 date: "2025-01-17"
 output: html_document
@@ -9,22 +9,76 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+## How to start
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+We use a AP mix to show how the MetaboMultiplex work.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+### Initialize parameter
 
-```{r cars}
-summary(cars)
+``` r
+plexPara_Amine <- set_plexPara(targetGroup = "Amine", deltaRt = 40, pps = 0.8)
+plexPara_Phenol <- set_plexPara(targetGroup = "Phenol", deltaRt = 40, pps = 0.8)
+xcmsPara <- set_xcmsPara(ppm = 30, peakwidth = c(4, 30), snthresh = 1,
+                         noise = 100, prefilter = c(3, 100), firstBaselineCheck = FALSE, 
+                         mergePeak = TRUE,
+                         expandRt = 2, expandMz = 0.01, minProp = 0.75)
+dataPara <- set_dataPara(data_dir = "path/to/data_dir",
+                             res_dir = "path/to/results_dir",
+                             sampleData = data.frame(sample_id = c("mix1_1", "mix1_2", "mix1_3"), injection_index = c(1,2,3)))
+data <- load_data(dataPara = dataPara)
 ```
 
-## Including Plots
+### Load basic data
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+``` r
+data(positive.adinfo, package = "cliqueMS")
+positive.adinfo <- positive.adinfo[positive.adinfo$adduct %in%
+                                      c("[M+H]+", "[M+H-H2O]+", "[M+Na]+", "[M+H-NH3]+", "[M+K]+", "[M+NH4]+"),]
+ms2Library <- load_DEANSBANK(thread = 3)
+cmpLibrary_Amine <- load_AmidoLibrary()
+cmpLibrary_Phenol <- load_PheHydroLibrary()
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+### Peak picking
+
+``` r
+data <- peakPicking(data, xcmsPara = xcmsPara, chunkSize = 3, BPPARAM = BiocParallel::SnowParam(workers = 3))
+data <- peakAnnotation(data, polarity = "positive", adinfo = positive.adinfo, chunkSize = 2, thread = 2)
+data <- getSpectra2(data = data, thread = 5)
+data <- tagNumAssigning(data = data,
+                        method = "cliqueMS+MetaboMultiplex", thread = 3)
+```
+
+### Peak grouping
+
+``` r
+# Amine
+data_Amine <- assign_plexInfo(data, plexPara = plexPara_Amine, thread = 3)
+data_Amine <- peakGrouping(data = data_Amine, plexPara = plexPara_Amine, thread = 1)
+# Phenol
+data_Phenol <- assign_plexInfo(data, plexPara = plexPara_Phenol, thread = 3)
+data_Phenol <- peakGrouping(data = data_Phenol, plexPara = plexPara_Phenol, thread = 1)
+```
+
+### Group aligning
+
+``` r
+data_Amine <- peakAligning(data = data_Amine, absMz = 0.02, absRt = 40)
+data_Phenol <- peakAligning(data = data_Phenol, absMz = 0.02, absRt = 40)
+```
+
+### Metabolites identification
+
+``` r
+data_Amine <- fgIdentification(data = data_Amine, cmpLibrary = cmpLibrary_Amine, ms2Library = ms2Library)
+data_Phenol <- fgIdentification(data = data_Phenol, cmpLibrary = cmpLibrary_Phenol, ms2Library = ms2Library)
+```
+
+### Results output
+
+``` r
+data_Amine <- getQuantRes(data_Amine, plexPara = plexPara_Amine, quant = "into")
+exportRes(data = data_Amine, file = paste0(dataPara$resultDir, "resTable_Amine.xlsx"))
+data_Phenol <- getQuantRes(data_Phenol, plexPara = plexPara_Phenol, quant = "into")
+exportRes(data = data_Phenol, file = paste0(dataPara$resultDir, "resTable_Phenol.xlsx"))
+```

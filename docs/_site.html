@@ -9,11 +9,9 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Barry Song" />
 
-<meta name="date" content="2025-01-17" />
 
-<title>MetaboMultiplex</title>
+<title>_site</title>
 
 <script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -259,73 +257,13 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">MetaboMultiplex</h1>
-<h4 class="author">Barry Song</h4>
-<h4 class="date">2025-01-17</h4>
 
 </div>
 
 
-<div id="how-to-start" class="section level2">
-<h2>How to start</h2>
-<p>We use a AP mix to show how the MetaboMultiplex work.</p>
-<div id="initialize-parameter" class="section level3">
-<h3>Initialize parameter</h3>
-<pre class="r"><code>plexPara_Amine &lt;- set_plexPara(targetGroup = &quot;Amine&quot;, deltaRt = 40, pps = 0.8)
-plexPara_Phenol &lt;- set_plexPara(targetGroup = &quot;Phenol&quot;, deltaRt = 40, pps = 0.8)
-xcmsPara &lt;- set_xcmsPara(ppm = 30, peakwidth = c(4, 30), snthresh = 1,
-                         noise = 100, prefilter = c(3, 100), firstBaselineCheck = FALSE, 
-                         mergePeak = TRUE,
-                         expandRt = 2, expandMz = 0.01, minProp = 0.75)
-dataPara &lt;- set_dataPara(data_dir = &quot;path/to/data_dir&quot;,
-                             res_dir = &quot;path/to/results_dir&quot;,
-                             sampleData = data.frame(sample_id = c(&quot;mix1_1&quot;, &quot;mix1_2&quot;, &quot;mix1_3&quot;), injection_index = c(1,2,3)))
-data &lt;- load_data(dataPara = dataPara)</code></pre>
-</div>
-<div id="load-basic-data" class="section level3">
-<h3>Load basic data</h3>
-<pre class="r"><code>data(positive.adinfo, package = &quot;cliqueMS&quot;)
-positive.adinfo &lt;- positive.adinfo[positive.adinfo$adduct %in%
-                                      c(&quot;[M+H]+&quot;, &quot;[M+H-H2O]+&quot;, &quot;[M+Na]+&quot;, &quot;[M+H-NH3]+&quot;, &quot;[M+K]+&quot;, &quot;[M+NH4]+&quot;),]
-ms2Library &lt;- load_DEANSBANK(thread = 3)
-cmpLibrary_Amine &lt;- load_AmidoLibrary()
-cmpLibrary_Phenol &lt;- load_PheHydroLibrary()</code></pre>
-</div>
-<div id="peak-picking" class="section level3">
-<h3>Peak picking</h3>
-<pre class="r"><code>data &lt;- peakPicking(data, xcmsPara = xcmsPara, chunkSize = 3, BPPARAM = BiocParallel::SnowParam(workers = 3))
-data &lt;- peakAnnotation(data, polarity = &quot;positive&quot;, adinfo = positive.adinfo, chunkSize = 2, thread = 2)
-data &lt;- getSpectra2(data = data, thread = 5)
-data &lt;- tagNumAssigning(data = data,
-                        method = &quot;cliqueMS+MetaboMultiplex&quot;, thread = 3)</code></pre>
-</div>
-<div id="peak-grouping" class="section level3">
-<h3>Peak grouping</h3>
-<pre class="r"><code># Amine
-data_Amine &lt;- assign_plexInfo(data, plexPara = plexPara_Amine, thread = 3)
-data_Amine &lt;- peakGrouping(data = data_Amine, plexPara = plexPara_Amine, thread = 1)
-# Phenol
-data_Phenol &lt;- assign_plexInfo(data, plexPara = plexPara_Phenol, thread = 3)
-data_Phenol &lt;- peakGrouping(data = data_Phenol, plexPara = plexPara_Phenol, thread = 1)</code></pre>
-</div>
-<div id="group-aligning" class="section level3">
-<h3>Group aligning</h3>
-<pre class="r"><code>data_Amine &lt;- peakAligning(data = data_Amine, absMz = 0.02, absRt = 40)
-data_Phenol &lt;- peakAligning(data = data_Phenol, absMz = 0.02, absRt = 40)</code></pre>
-</div>
-<div id="metabolites-identification" class="section level3">
-<h3>Metabolites identification</h3>
-<pre class="r"><code>data_Amine &lt;- fgIdentification(data = data_Amine, cmpLibrary = cmpLibrary_Amine, ms2Library = ms2Library)
-data_Phenol &lt;- fgIdentification(data = data_Phenol, cmpLibrary = cmpLibrary_Phenol, ms2Library = ms2Library)</code></pre>
-</div>
-<div id="results-output" class="section level3">
-<h3>Results output</h3>
-<pre class="r"><code>data_Amine &lt;- getQuantRes(data_Amine, plexPara = plexPara_Amine, quant = &quot;into&quot;)
-exportRes(data = data_Amine, file = paste0(dataPara$resultDir, &quot;resTable_Amine.xlsx&quot;))
-data_Phenol &lt;- getQuantRes(data_Phenol, plexPara = plexPara_Phenol, quant = &quot;into&quot;)
-exportRes(data = data_Phenol, file = paste0(dataPara$resultDir, &quot;resTable_Phenol.xlsx&quot;))</code></pre>
-</div>
-</div>
+<p>name: “MetaboMultiplex” output_dir: “.” navbar: title:
+“MetaboMultiplex” left: - text: “in-house library” href: Library.html
+output: html_document: theme: cosmo</p>
 
 
 

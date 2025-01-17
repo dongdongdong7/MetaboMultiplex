@@ -1,0 +1,10 @@
+name: "MetaboMultiplex"
+output_dir: "."
+navbar:
+  title: "MetaboMultiplex"
+  left:
+    - text: "in-house library"
+      href: Library.html
+output:
+  html_document:
+    theme: cosmo
