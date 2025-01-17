@@ -11,3 +11,6 @@ This R package is specifically designed to automate the processing of multiplexe
 devtools::install_github("dongdongdong7/MetaboMultiplex")
 ```
 
+## Tutorial
+
+You can find tutorial at [MetaboMultiplex]([MetaboMultiplex](https://dongdongdong7.github.io/MetaboMultiplex/)).
