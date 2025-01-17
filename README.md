@@ -13,4 +13,4 @@ devtools::install_github("dongdongdong7/MetaboMultiplex")
 
 ## Tutorial
 
-You can find tutorial at [MetaboMultiplex]([MetaboMultiplex](https://dongdongdong7.github.io/MetaboMultiplex/)).
+You can find tutorial at [MetaboMultiplex](https://dongdongdong7.github.io/MetaboMultiplex/).
